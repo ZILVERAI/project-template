@@ -13,6 +13,9 @@ export default defineConfig({
 	},
 	plugins: [react()],
 	server: {
+		hmr: {
+			path: "/_vite_websockets",
+		},
 		allowedHosts: [".zilver.com", ".zilver.local"],
 	},
 });
