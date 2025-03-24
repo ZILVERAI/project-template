@@ -5,6 +5,10 @@ import path from "path";
 function disableCachePlugin(): Plugin {
 	return {
 		name: "strip-if-none-match",
+		handleHotUpdate({ server }) {
+			server.ws.send({ type: "full-reload" });
+			return [];
+		},
 		configureServer(server) {
 			server.middlewares.use((req, _res, next) => {
 				delete req.headers["if-none-match"];
