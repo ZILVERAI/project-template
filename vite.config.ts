@@ -1,6 +1,18 @@
-import { defineConfig } from "vite";
+import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+
+function disableCachePlugin(): Plugin {
+	return {
+		name: "strip-if-none-match",
+		configureServer(server) {
+			server.middlewares.use((req, _res, next) => {
+				delete req.headers["if-none-match"];
+				next();
+			});
+		},
+	};
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,8 +24,11 @@ export default defineConfig({
 			// "@utils": path.resolve(__dirname, "./src/utils"),
 		},
 	},
-	plugins: [react()],
+	plugins: [react(), disableCachePlugin()],
 	server: {
+		watch: {
+			alwaysStat: true,
+		},
 		hmr: {
 			path: "/_vite_websockets",
 		},
