@@ -32,6 +32,7 @@ export default defineConfig({
 	server: {
 		watch: {
 			alwaysStat: true,
+			usePolling: true,
 		},
 		hmr: {
 			path: "/_vite_websockets",
