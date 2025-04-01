@@ -11,6 +11,11 @@ export default defineConfig({
 	},
 	plugins: [react()],
 	server: {
+		watch: {
+			usePolling: true,
+			alwaysStat: true,
+			persistent: true,
+		},
 		hmr: {
 			path: "/_vite_websockets",
 		},
