@@ -38,7 +38,14 @@ function tagPlugin(): Plugin {
 				const abstracttree = parse(code, parseConfig);
 
 				const magicString = new MagicString(code);
-				const traverse = _traverse.default as typeof _traverse;
+				let traverse: typeof _traverse;
+
+				if (typeof _traverse === "function") {
+					traverse = _traverse;
+				} else {
+					//@ts-expect-error Lib is bugged
+					traverse = _traverse.default;
+				}
 
 				// console.log(typeof traverse);
 
