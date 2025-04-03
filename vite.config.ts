@@ -40,16 +40,21 @@ function tagPlugin(): Plugin {
 				const magicString = new MagicString(code);
 				const traverse = _traverse.default as typeof _traverse;
 
-				console.log(typeof traverse);
+				// console.log(typeof traverse);
 
 				traverse(abstracttree, {
 					enter(nodePath) {
+						// if (nodePath.node.type === "JSXElement") {
+						// 	console.log(nodePath.node.nam);
+						// }
+
 						if (nodePath.node.type === "JSXOpeningElement") {
 							const jsxNode = nodePath.node;
 							let elName: string | undefined;
 
 							if (jsxNode.name.type === "JSXIdentifier") {
 								elName = jsxNode.name.name;
+								// console.log("Name", elName);
 							} else if (jsxNode.name.type === "JSXMemberExpression") {
 								const expression: JSXMemberExpression = jsxNode.name;
 								const expressionObject: JSXIdentifier = jsxNode.name
