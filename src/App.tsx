@@ -32,7 +32,11 @@ function App() {
       </div>
       <div>
         {new Array(50).fill(0).map(() => {
-          return <RandomColorTriangle />;
+          return (
+            <div className="flex flex-col items-center justify-center p-8">
+              <RandomColorTriangle />
+            </div>
+          );
         })}
       </div>
     </div>
