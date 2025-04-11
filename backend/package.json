@@ -1,0 +1,18 @@
+{
+  "name": "backend",
+  "scripts": {
+    "dev:server": "bun run src/index.ts --watch",
+    "lint": "eslint src",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trpc/server": "npm:@trpc/server",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.12",
+    "eslint": "^9.21.0",
+    "typescript": "^5.8.2"
+  },
+  "version": "11.1.0"
+}
