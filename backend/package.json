@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "scripts": {
-    "dev:server": "bun run src/index.ts --watch",
+    "dev:server": "bun run src/index.ts --hot",
     "lint": "eslint src",
     "type-check": "tsc --noEmit"
   },
