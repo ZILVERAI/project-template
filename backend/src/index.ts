@@ -3,6 +3,7 @@ import { appRouter } from "./router";
 
 Bun.serve({
 	port: 3000,
+	reusePort: true,
 	fetch(request) {
 		// Only used for start-server-and-test package that
 		// expects a 200 OK to start testing the server.
