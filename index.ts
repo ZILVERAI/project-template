@@ -21,16 +21,17 @@ async function startBackendProcess() {
 	backendProcess.unref();
 
 	async function handler(evName: string) {
-		if (timer !== null) {
+		if (backendProcess === null) {
+			// console.log("Change ongoing");
 			return;
+		}
+		if (timer !== null) {
+			clearTimeout(timer);
+			timer = null;
 		}
 
 		timer = setTimeout(async () => {
 			// console.log("Change ", evName);
-			if (backendProcess === null) {
-				// console.log("Change ongoing");
-				return;
-			}
 			// backendProcess.send("restart");
 			const inst = backendProcess;
 			backendProcess = null;
