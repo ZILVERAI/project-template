@@ -26,9 +26,9 @@ async function startBackendProcess() {
 		}
 
 		timer = setTimeout(async () => {
-			console.log("Change ", evName);
+			// console.log("Change ", evName);
 			if (backendProcess === null) {
-				console.log("Change ongoing");
+				// console.log("Change ongoing");
 				return;
 			}
 			// backendProcess.send("restart");
@@ -37,6 +37,7 @@ async function startBackendProcess() {
 			inst.kill("SIGINT");
 			timer = null;
 			await inst.exited;
+			// console.log("Waiting for change...");
 			backendProcess = Bun.spawn(spawnOptions);
 			backendProcess.unref();
 		}, 400);
@@ -57,7 +58,7 @@ async function run() {
 		stderr: "pipe",
 	});
 
-	console.log("Servers started.");
+	// console.log("Servers started.");
 
 	await startBackendProcess();
 	await frontendProcess.exited;
