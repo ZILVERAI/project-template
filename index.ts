@@ -2,31 +2,44 @@
 // on docker
 
 import chokidar from "chokidar";
+import portused from "tcp-port-used";
 
 const backendWatcher = chokidar.watch("./backend/", {
 	ignored: (path) => path.includes("node_modules"),
 });
 async function startBackendProcess() {
+	let backendProcess: Bun.Subprocess | null = null;
 	const spawnOptions: Bun.SpawnOptions.OptionsObject & { cmd: string[] } = {
 		cmd: ["bun", "run", "--filter", "backend", "dev:server"],
+
 		stdout: "inherit",
+		stderr: "inherit",
 	};
-	let backendProcess: Bun.Subprocess | null = Bun.spawn(spawnOptions);
+
+	backendProcess = Bun.spawn(spawnOptions);
+	let timer: NodeJS.Timeout | null = null;
+	backendProcess.unref();
 
 	async function handler(evName: string) {
-		console.log("Change ", evName);
-		if (backendProcess === null) {
+		if (timer !== null) {
 			return;
 		}
 
-		const inst = backendProcess;
-		backendProcess = null;
-		inst.kill();
-
-		if (await inst.exited) {
-			console.log("Restarting backend");
+		timer = setTimeout(async () => {
+			console.log("Change ", evName);
+			if (backendProcess === null) {
+				console.log("Change ongoing");
+				return;
+			}
+			// backendProcess.send("restart");
+			const inst = backendProcess;
+			backendProcess = null;
+			inst.kill("SIGINT");
+			timer = null;
+			await inst.exited;
 			backendProcess = Bun.spawn(spawnOptions);
-		}
+			backendProcess.unref();
+		}, 400);
 	}
 	// Hook up the on change event listener
 	backendWatcher

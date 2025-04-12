@@ -10,7 +10,9 @@
     "start": "bun run index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/tcp-port-used": "^1.0.4",
+    "tcp-port-used": "^1.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
