@@ -17,5 +17,8 @@
   },
   "trustedDependencies": [
     "esbuild"
-  ]
+  ],
+  "dependencies": {
+    "chokidar": "^4.0.3"
+  }
 }
