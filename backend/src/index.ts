@@ -15,7 +15,7 @@ Bun.serve({
 		}
 
 		return fetchRequestHandler({
-			endpoint: "/trpc",
+			endpoint: "/_api/trpc",
 			req: request,
 			router: appRouter,
 			createContext: () => ({}),
