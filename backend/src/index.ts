@@ -1,5 +1,5 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./router";
+import { appRouter } from "@/router";
 
 const server = Bun.serve({
 	port: 3000,
