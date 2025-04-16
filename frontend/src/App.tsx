@@ -1,11 +1,11 @@
-import { client } from "@/utils/trpc";
 import { useEffect, useState } from "react";
+import { getHelloWorld } from "./utils/api";
 
 function App() {
   const [t, setT] = useState<string>("");
   useEffect(() => {
     void (async function () {
-      const res = await client.hello.query();
+      const res = await getHelloWorld();
       setT(res);
     })();
   }, []);

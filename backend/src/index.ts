@@ -1,6 +1,3 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "@/router";
-
 const server = Bun.serve({
 	port: 3000,
 	fetch(request) {
@@ -10,16 +7,7 @@ const server = Bun.serve({
 			return new Response();
 		}
 
-		if (new URL(request.url).pathname === "/") {
-			return new Response("hello world, lol");
-		}
-
-		return fetchRequestHandler({
-			endpoint: "/_api/trpc",
-			req: request,
-			router: appRouter,
-			createContext: () => ({}),
-		});
+		return new Response("hello world");
 	},
 });
 

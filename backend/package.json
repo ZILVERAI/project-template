@@ -6,7 +6,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@trpc/server": "npm:@trpc/server",
     "zod": "^3.24.2"
   },
   "devDependencies": {
