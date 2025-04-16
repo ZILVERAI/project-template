@@ -1,20 +1,21 @@
-const server = Bun.serve({
-	port: 3000,
-	fetch(request) {
-		// Only used for start-server-and-test package that
-		// expects a 200 OK to start testing the server.
-		if (request.method === "HEAD") {
-			return new Response();
-		}
+import express from "express";
+import cors from "cors";
 
-		return new Response("hello world");
-	},
+const app = express();
+app.use(cors());
+const port = 3000;
+
+app.get("/", (req, res) => {
+	res.send("Hello World!");
+});
+
+const server = app.listen(port, () => {
+	console.log(`Listening on port ${port}...`);
 });
 
 async function stopServer() {
-	await server.stop();
+	server.close();
 }
 
 process.on("SIGTERM", stopServer);
 process.on("SIGINT", stopServer);
-console.log("Listening on 3000");
