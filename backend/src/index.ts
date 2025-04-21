@@ -30,7 +30,8 @@ io.on("connection", (socket) => {
 
 // Start sever + some utilities.
 
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
+	// Make sure to listen on all interfaces.
 	console.log(`Listening on port ${port}...`);
 });
 
