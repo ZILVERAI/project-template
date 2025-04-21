@@ -2,15 +2,24 @@
 // on docker
 
 import chokidar from "chokidar";
-import portused from "tcp-port-used";
 
 const backendWatcher = chokidar.watch("./backend/", {
 	ignored: (path) => path.includes("node_modules"),
+	alwaysStat: true,
+	awaitWriteFinish: true,
+	atomic: true,
 });
 async function startBackendProcess() {
 	let backendProcess: Bun.Subprocess | null = null;
 	const spawnOptions: Bun.SpawnOptions.OptionsObject & { cmd: string[] } = {
-		cmd: ["bun", "run", "--filter", "backend", "dev:server"],
+		cmd: [
+			"bun",
+			"run",
+			"--filter",
+			"backend",
+			"--elide-lines=60",
+			"dev:server",
+		],
 
 		stdout: "inherit",
 		stderr: "inherit",
