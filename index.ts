@@ -64,7 +64,7 @@ async function startBackendProcess() {
 async function run() {
 	const frontendProcess = Bun.spawn({
 		cmd: ["bun", "run", "--filter", "frontend", "dev"],
-		stdout: "inherit",
+		stdout: "pipe",
 		stderr: "pipe",
 	});
 
