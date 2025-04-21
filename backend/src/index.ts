@@ -1,15 +1,36 @@
 import express from "express";
 import cors from "cors";
+import http from "node:http";
+import { Server } from "socket.io";
 
 const app = express();
-app.use(cors());
+const server = http.createServer(app);
 const port = 3000;
 
-app.get("/", (req, res) => {
+// Express API
+
+app.use(cors());
+app.use(express.json());
+
+const apiRouter = express.Router();
+app.use("/_api", apiRouter);
+
+apiRouter.get("/", (req, res) => {
 	res.send("Hello World!");
 });
 
-const server = app.listen(port, () => {
+// SocketIO
+const io = new Server(server, {
+	path: "/_api/socket.io",
+});
+
+io.on("connection", (socket) => {
+	console.log("New connection received!");
+});
+
+// Start sever + some utilities.
+
+server.listen(port, () => {
 	console.log(`Listening on port ${port}...`);
 });
 

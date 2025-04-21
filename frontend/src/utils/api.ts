@@ -1,3 +1,5 @@
+import { io } from "socket.io-client";
+
 type HelloWorldAPIResponse = string;
 
 function getAPIURL(path?: string) {
@@ -16,4 +18,10 @@ export async function getHelloWorld() {
 
 	const responseBody: HelloWorldAPIResponse = await response.text();
 	return responseBody;
+}
+
+// Example of getting a socket io connection.
+export function getSocket() {
+	const socket = io("/", { path: "/_api/socket.io" });
+	return socket;
 }
