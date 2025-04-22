@@ -1,6 +1,8 @@
 {
   "name": "@backend",
+  "type": "module",
   "exports": {
+    "./*": "./*",
     "./shared/*": "./src/shared/*",
     "./shared": "./src/shared/index.ts"
   },
