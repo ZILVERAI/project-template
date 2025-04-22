@@ -1,5 +1,9 @@
 {
-  "name": "backend",
+  "name": "@backend",
+  "exports": {
+    "./shared/*": "./src/shared/*",
+    "./shared": "./src/shared/index.ts"
+  },
   "scripts": {
     "dev:server": "bun run src/index.ts",
     "lint": "eslint src",

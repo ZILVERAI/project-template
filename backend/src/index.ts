@@ -36,6 +36,7 @@ server.listen(port, "0.0.0.0", () => {
 });
 
 async function stopServer() {
+	io.close();
 	server.close();
 }
 

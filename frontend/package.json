@@ -11,7 +11,7 @@
     "css:lint": "bunx postcss-cli src/**/*.css -o /dev/null"
   },
   "dependencies": {
-    "backend": "workspace:*",
+    "@backend": "workspace:*",
     "caniuse-lite": "^1.0.30001707",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
