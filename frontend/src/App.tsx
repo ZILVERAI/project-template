@@ -1,32 +1,28 @@
-import { useEffect, useState } from "react";
-import { getHelloWorld, getSocket } from "./utils/api";
+import { getHelloWorld } from "./utils/api";
+import {
+  useQuery,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
-  const [t, setT] = useState<string>("");
-  const [connected, setConnected] = useState<boolean>(false);
-  useEffect(() => {
-    void (async function () {
-      const res = await getHelloWorld();
-      setT(res);
-    })();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ExampleComponent />
+    </QueryClientProvider>
+  );
+}
 
-    // Getting socket.
-    const socket = getSocket();
-    socket.on("connect", () => {
-      setConnected(true);
-    });
-    socket.on("disconnect", () => {
-      setConnected(false);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
+function ExampleComponent() {
+  const helloWorld = useQuery({
+    queryFn: getHelloWorld,
+  });
   return (
     <div className="text-black flex flex-col">
-      Hello world from ZILVER: {t}, socket is{" "}
-      {connected ? "connected" : "disconnected"}
+      Hello world from ZILVER: {helloWorld.data || "not fetched"}
     </div>
   );
 }
