@@ -22,6 +22,7 @@
     "@babel/parser": "7",
     "@babel/traverse": "^7.27.0",
     "@eslint/js": "^9.17.0",
+    "@tanstack/eslint-plugin-query": "4",
     "@types/babel__traverse": "^7.20.7",
     "@types/estree": "^1.0.7",
     "@types/node": "^22.13.8",
