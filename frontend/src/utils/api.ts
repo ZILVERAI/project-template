@@ -1,4 +1,4 @@
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 type HelloWorldAPIResponse = string;
 
@@ -20,8 +20,13 @@ export async function getHelloWorld() {
 	return responseBody;
 }
 
+let socket: Socket | undefined = undefined;
 // Example of getting a socket io connection.
 export function getSocket() {
-	const socket = io("/", { path: "/_api/socket.io" });
+	if (socket !== undefined) {
+		return socket;
+	}
+
+	socket = io("/", { path: "/_api/socket.io" });
 	return socket;
 }
