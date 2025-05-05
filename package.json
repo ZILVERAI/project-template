@@ -7,13 +7,13 @@
     "backend"
   ],
   "scripts": {
-    "start": "bun run index.ts"
+    "start": "bun run index.ts",
+    "generate": "bunx zynapse-cli -I ./backend/src/api.schema.ts -O ./frontend/_generated/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/tcp-port-used": "^1.0.4",
-    "tcp-port-used": "^1.0.2",
-    "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
+    "tcp-port-used": "^1.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
@@ -23,6 +23,7 @@
     "esbuild"
   ],
   "dependencies": {
-    "chokidar": "^4.0.3"
+    "chokidar": "^4.0.3",
+    "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   }
 }

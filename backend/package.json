@@ -7,21 +7,16 @@
     "./shared": "./src/shared/index.ts"
   },
   "scripts": {
-    "dev:server": "bun run src/index.ts",
+    "dev:server": "bun run src/server/index.ts",
     "lint": "eslint src",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "socket.io": "^4.8.1",
     "zod": "^3.24.2",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   },
   "devDependencies": {
     "@types/bun": "^1.1.12",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.1",
     "eslint": "^9.21.0",
     "typescript": "^5.8.2"
   },
