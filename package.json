@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "start": "bun run index.ts",
-    "generate": "bunx zynapse-cli -I ./backend/src/api.schema.ts -O ./frontend/_generated/index.ts"
+    "generate": "bunx zynapse-cli -I ./backend/src/api.schema.ts -O ./frontend/src/_generated/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
