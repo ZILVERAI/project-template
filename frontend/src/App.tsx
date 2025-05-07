@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -14,7 +15,9 @@ function App() {
 
 function ExampleComponent() {
   return (
-    <div className="text-black flex flex-col">Hello world from ZILVER</div>
+    <div className="text-black flex flex-col">
+      Hello world from ZILVER<Button>This is crazy</Button>
+    </div>
   );
 }
 
