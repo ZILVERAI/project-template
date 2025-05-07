@@ -78,6 +78,7 @@
     "autoprefixer": "^10.4.20",
     "babel-plugin-react-compiler": "^19.1.0-rc.1",
     "eslint": "^9.17.0",
+    "eslint-plugin-no-barrel-files": "^1.2.1",
     "eslint-plugin-react-hooks": "^6.0.0-rc.1",
     "eslint-plugin-react-refresh": "^0.4.16",
     "estree-walker": "^3.0.3",

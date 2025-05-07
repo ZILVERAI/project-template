@@ -4,11 +4,13 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import tanstackEslint from "@tanstack/eslint-plugin-query"
+import noBarrelFiles from "eslint-plugin-no-barrel-files";
+
 
 export default tseslint.config(
   { ignores: ['dist'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended, tanstackEslint.configs.recommended ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
@@ -17,14 +19,20 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
-      "@tanstack/eslint-plugin-query": tanstackEslint
+      "@tanstack/query": tanstackEslint,
+      "no-barrel-files": noBarrelFiles
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+
+      "no-barrel-files/no-barrel-files": [
+        "error"
+      ]
+
+      // 'react-refresh/only-export-components': [
+      //   'warn',
+      //   { allowConstantExport: true },
+      // ],
     },
   },
 )
