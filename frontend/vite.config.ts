@@ -1,5 +1,5 @@
 import { defineConfig, Plugin, PluginOption } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { parse, ParserOptions } from "@babel/parser";
 import _traverse from "@babel/traverse";
@@ -103,8 +103,18 @@ function tagPlugin(): Plugin {
 
 // https://vite.dev/config/
 
+const ReactCompilerConfig = {
+	target: "18",
+};
+
 export default defineConfig(({ mode }) => {
-	const pluginsArray: Array<PluginOption> = [react()];
+	const pluginsArray: Array<PluginOption> = [
+		react({
+			babel: {
+				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+			},
+		}),
+	];
 
 	if (mode === "development") {
 		pluginsArray.push(tagPlugin());
