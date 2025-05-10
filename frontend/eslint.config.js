@@ -27,7 +27,8 @@ export default tseslint.config(
 
       "no-barrel-files/no-barrel-files": [
         "error"
-      ]
+      ],
+      "@typescript-eslint/no-empty-object-type": ["off"]
 
       // 'react-refresh/only-export-components': [
       //   'warn',
