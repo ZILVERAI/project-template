@@ -28,7 +28,8 @@ const backendWatcher = chokidar.watch("./backend/", {
 		path.includes("node_modules") || path.includes("generated/prisma"),
 	alwaysStat: true,
 	awaitWriteFinish: true,
-	atomic: true,
+	// atomic: true,
+	usePolling: true,
 });
 async function startBackendProcess() {
 	let backendProcess: Bun.Subprocess | null = null;
