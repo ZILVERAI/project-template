@@ -25,4 +25,4 @@ dist-ssr
 
 
 # Prisma generated code ignores.
-generated/prisma/
+generated/prisma/*
