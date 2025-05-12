@@ -20,7 +20,7 @@ async function generatePrisma() {
 		stderr: "inherit",
 	});
 
-	return await sp.exited;
+	return await gen.exited;
 }
 
 const backendWatcher = chokidar.watch("./backend/", {
