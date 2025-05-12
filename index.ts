@@ -11,6 +11,15 @@ async function generatePrisma() {
 		stderr: "inherit",
 	});
 
+	await sp.exited;
+
+	const gen = Bun.spawn({
+		cwd: "./backend",
+		cmd: ["bunx", "prisma", "generate"],
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+
 	return await sp.exited;
 }
 
