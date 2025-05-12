@@ -13,13 +13,19 @@
     "schema-type-check": "tsc -p ./tsconfig.schema.json"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
     "zod": "^3.24.2",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   },
   "devDependencies": {
     "@types/bun": "^1.1.12",
     "eslint": "^9.21.0",
+    "prisma": "^6.7.0",
     "typescript": "^5.8.2"
   },
-  "version": "11.1.0"
+  "version": "11.1.0",
+  "trustedDependencies": [
+    "prisma",
+    "@prisma/client"
+  ]
 }
