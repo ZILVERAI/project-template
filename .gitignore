@@ -27,3 +27,6 @@ dist-ssr
 # Prisma generated code ignores.
 generated/*
 generated
+
+# We need to ignore the sqlite db file too.
+*.db

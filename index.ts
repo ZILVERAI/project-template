@@ -3,8 +3,20 @@
 
 import chokidar from "chokidar";
 
+async function generatePrisma() {
+	const sp = Bun.spawn({
+		cwd: "./backend",
+		cmd: ["bunx", "prisma", "generate"],
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+
+	return await sp.exited;
+}
+
 const backendWatcher = chokidar.watch("./backend/", {
-	ignored: (path) => path.includes("node_modules"),
+	ignored: (path) =>
+		path.includes("node_modules") || path.includes("generated/prisma"),
 	alwaysStat: true,
 	awaitWriteFinish: true,
 	atomic: true,
@@ -48,6 +60,7 @@ async function startBackendProcess() {
 			timer = null;
 			await inst.exited;
 			// console.log("Waiting for change...");
+			await generatePrisma(); // TODO: this must be done outside of here.
 			backendProcess = Bun.spawn(spawnOptions);
 			backendProcess.unref();
 		}, 400);
