@@ -6,7 +6,7 @@ import chokidar from "chokidar";
 async function generatePrisma() {
 	const sp = Bun.spawn({
 		cwd: "./backend",
-		cmd: ["bunx", "prisma", "generate"],
+		cmd: ["bunx", "prisma", "migrate", "deploy"],
 		stdout: "inherit",
 		stderr: "inherit",
 	});
