@@ -38,7 +38,7 @@ async function startBackendProcess() {
 			"bun",
 			"run",
 			"--filter",
-			"@backend",
+			"backend",
 			"--elide-lines=60",
 			"dev:server",
 		],
