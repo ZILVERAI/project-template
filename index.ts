@@ -25,7 +25,10 @@ async function generatePrisma() {
 
 const backendWatcher = chokidar.watch("./backend/", {
 	ignored: (path) =>
-		path.includes("node_modules") || path.includes("generated/prisma"),
+		path.includes("node_modules") ||
+		path.includes("generated/prisma") ||
+		path.endsWith(".db") ||
+		path.endsWith(".db-journal"),
 	alwaysStat: true,
 	awaitWriteFinish: true,
 	// atomic: true,
