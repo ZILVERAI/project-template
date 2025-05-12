@@ -30,3 +30,4 @@ generated
 
 # We need to ignore the sqlite db file too.
 *.db
+*.db-journal
