@@ -44,14 +44,14 @@ async function generatePrisma() {
 
 	await gen.exited;
 
-	if (prismaStudioProcess === null) {
-		prismaStudioProcess = await startPrismaStudio();
-	} else {
-		(prismaStudioProcess as Bun.Subprocess).kill("SIGINT");
-		await (prismaStudioProcess as Bun.Subprocess).exited;
-		console.log("Prisma studio killed");
-		prismaStudioProcess = await startPrismaStudio();
-	}
+	// if (prismaStudioProcess === null) {
+	// 	prismaStudioProcess = await startPrismaStudio();
+	// } else {
+	// 	(prismaStudioProcess as Bun.Subprocess).kill("SIGINT");
+	// 	await (prismaStudioProcess as Bun.Subprocess).exited;
+	// 	console.log("Prisma studio killed");
+	// 	prismaStudioProcess = await startPrismaStudio();
+	// }
 }
 
 const backendWatcher = chokidar.watch("./backend/", {
