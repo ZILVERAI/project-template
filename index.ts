@@ -2,6 +2,27 @@
 // on docker
 
 import chokidar from "chokidar";
+// TODO: This needs to be moved to the container controller so that crashes and automatic restarts can be handled.
+async function startPrismaStudio() {
+	const sp = Bun.spawn({
+		cwd: "./backend",
+		cmd: [
+			"bunx",
+			"prisma",
+			"studio",
+			"--port",
+			"1337",
+			"--hostname",
+			"0.0.0.0",
+			"--browser",
+			"none",
+		],
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+
+	await sp.exited;
+}
 
 async function generatePrisma() {
 	const sp = Bun.spawn({
@@ -95,7 +116,7 @@ async function run() {
 	});
 
 	// console.log("Servers started.");
-
+	startPrismaStudio();
 	await startBackendProcess();
 	await frontendProcess.exited;
 }
