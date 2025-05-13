@@ -138,7 +138,7 @@ export default defineConfig(({ mode }) => {
 			hmr: {
 				path: "/_vite_websockets",
 			},
-			allowedHosts: [".zilver.com", ".zilver.local"],
+			allowedHosts: [".zilver.com", ".zilver.local", ".zilver.ai"],
 		},
 	};
 });
