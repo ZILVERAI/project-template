@@ -3,7 +3,7 @@
 
 import chokidar from "chokidar";
 // TODO: This needs to be moved to the container controller so that crashes and automatic restarts can be handled.
-async function startPrismaStudio() {
+async function startPrismaStudio(): Promise<Bun.Subprocess> {
 	const sp = Bun.spawn({
 		cwd: "./backend",
 		cmd: [
@@ -21,10 +21,11 @@ async function startPrismaStudio() {
 		stderr: "inherit",
 	});
 
-	await sp.exited;
+	return sp;
 }
 
 async function generatePrisma() {
+	let prismaStudioProcess: Bun.Subprocess | null = null;
 	const sp = Bun.spawn({
 		cwd: "./backend",
 		cmd: ["bunx", "prisma", "migrate", "deploy"],
@@ -41,7 +42,16 @@ async function generatePrisma() {
 		stderr: "inherit",
 	});
 
-	return await gen.exited;
+	await gen.exited;
+
+	if (prismaStudioProcess === null) {
+		prismaStudioProcess = await startPrismaStudio();
+	} else {
+		(prismaStudioProcess as Bun.Subprocess).kill("SIGINT");
+		await (prismaStudioProcess as Bun.Subprocess).exited;
+		console.log("Prisma studio killed");
+		prismaStudioProcess = await startPrismaStudio();
+	}
 }
 
 const backendWatcher = chokidar.watch("./backend/", {
@@ -116,7 +126,7 @@ async function run() {
 	});
 
 	// console.log("Servers started.");
-	startPrismaStudio();
+
 	await startBackendProcess();
 	await frontendProcess.exited;
 }
