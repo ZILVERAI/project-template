@@ -1,21 +1,45 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, UseMutationOptions } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 
-// ---- Service Name: Greeting ----
-type GreetingSayHelloOutputType = {
-	greeting: string;
-};
+// ---- Service Name: Users ----
+export const UsersGetUserByIdQueryInputSchema = z
+	.object({ id: z.string().uuid().optional() })
+	.strict();
+export type UsersGetUserByIdOutputType = boolean;
 
-export function useGreetingSayHelloQuery(args: { name: string }) {
-	/*Accepts a name and then returns hello to that name*/
+export function useUsersGetUserByIdQuery(
+	args: z.infer<typeof UsersGetUserByIdQueryInputSchema>,
+	extraOptions?: Omit<
+		UseQueryOptions<
+			UsersGetUserByIdOutputType,
+			unknown,
+			UsersGetUserByIdOutputType,
+			Array<string>
+		>,
+		"queryKey" | "queryFn"
+	>,
+) {
+	/*Get the user object by using its id.*/
 	return useQuery({
-		queryKey: ["Greeting", "SayHello"],
+		queryKey: ["Users", "GetUserById"],
 		queryFn: async () => {
+			const validationResult =
+				await UsersGetUserByIdQueryInputSchema.safeParseAsync(args);
+			if (validationResult.error) {
+				console.error(
+					"Error on input validation of GetUserById",
+					validationResult.error,
+				);
+				throw new Error(validationResult.error.message);
+			}
+
 			const response = await fetch("/_api", {
 				method: "POST",
 				body: JSON.stringify({
-					service: "Greeting",
-					proc: "SayHello",
-					data: args,
+					service: "Users",
+					procedure: "GetUserById",
+					data: validationResult.data,
 				}),
 			});
 
@@ -24,7 +48,59 @@ export function useGreetingSayHelloQuery(args: { name: string }) {
 			}
 
 			const rawResponse = await response.json();
-			return rawResponse["data"] as GreetingSayHelloOutputType;
+			return rawResponse["data"] as UsersGetUserByIdOutputType;
+		},
+		...extraOptions,
+	});
+}
+
+export type UsersChangeUsernameOutputType = boolean;
+export const UsersChangeUsernameInputSchema = z
+	.object({ id: z.string().uuid(), newName: z.string().min(1).max(255) })
+	.strict();
+export function useUsersChangeUsernameMutation(
+	extraOptions?: Omit<
+		UseMutationOptions<
+			UsersChangeUsernameOutputType,
+			unknown,
+			z.infer<typeof UsersChangeUsernameInputSchema>,
+			unknown
+		>,
+		"mutationFn"
+	>,
+) {
+	/*Change a specific user's name using its id*/
+	return useMutation({
+		...extraOptions,
+		mutationFn: async (
+			args: z.infer<typeof UsersChangeUsernameInputSchema>,
+		) => {
+			const validationResult =
+				await UsersChangeUsernameInputSchema.safeParseAsync(args);
+			if (validationResult.error) {
+				console.error(
+					"Error on validating mutation input ",
+					validationResult.error,
+				);
+				throw new Error(validationResult.error.message);
+			}
+
+			const response = await fetch("/_api", {
+				method: "POST",
+				body: JSON.stringify({
+					service: "Users",
+					procedure: "ChangeUsername",
+					data: validationResult.data,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("Mutation error");
+			}
+
+			const rawResponse = await response.json();
+
+			return rawResponse as UsersChangeUsernameOutputType;
 		},
 	});
 }
