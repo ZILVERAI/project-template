@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { parse, ParserOptions } from "@babel/parser";
 import _traverse from "@babel/traverse";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 import MagicString from "magic-string";
 // import { walk } from "estree-walker";
@@ -109,6 +110,7 @@ const ReactCompilerConfig = {
 
 export default defineConfig(({ mode }) => {
 	const pluginsArray: Array<PluginOption> = [
+		TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
 		react({
 			babel: {
 				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],

@@ -8,7 +8,7 @@ import noBarrelFiles from "eslint-plugin-no-barrel-files";
 
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ['dist', "./src/routeTree.gen.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
