@@ -13,7 +13,7 @@ export function useUsersGetUserByIdQuery(
 	extraOptions?: Omit<
 		UseQueryOptions<
 			UsersGetUserByIdOutputType,
-			unknown,
+			Error,
 			UsersGetUserByIdOutputType,
 			Array<string>
 		>,
@@ -62,7 +62,7 @@ export function useUsersChangeUsernameMutation(
 	extraOptions?: Omit<
 		UseMutationOptions<
 			UsersChangeUsernameOutputType,
-			unknown,
+			Error,
 			z.infer<typeof UsersChangeUsernameInputSchema>,
 			unknown
 		>,
