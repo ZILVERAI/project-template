@@ -14,8 +14,17 @@ const helloWorldService = new Service("Greeting").addProcedure({
 	}),
 });
 
+const pingService = new Service("Ping").addProcedure({
+	method: "QUERY",
+	name: "PingRequest",
+	description: "Responds with pong.",
+	input: z.object({}),
+	output: z.literal("pong"),
+});
+
 const schema = new APISchema({
 	Greeting: helloWorldService,
+	Ping: pingService,
 });
 
 export default schema;
