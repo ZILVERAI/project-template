@@ -1,7 +1,7 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
 
-export const Route = createRootRoute({
-  component: () => (
+function RootComponent() {
+  return (
     <>
       <div className="p-2 flex gap-2">
         <Link to="/" className="[&.active]:font-bold">
@@ -14,5 +14,9 @@ export const Route = createRootRoute({
       <hr />
       <Outlet />
     </>
-  ),
+  );
+}
+
+export const Route = createRootRoute({
+  component: RootComponent,
 });

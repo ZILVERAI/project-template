@@ -13,7 +13,7 @@
     "schema-type-check": "tsc -p ./tsconfig.schema.json"
   },
   "dependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^6.8.2",
     "zod": "^3.24.2",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   },
