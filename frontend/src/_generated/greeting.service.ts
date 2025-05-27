@@ -21,7 +21,7 @@ export function useGreetingSayHelloQuery(
     "queryKey" | "queryFn"
   >,
 ) {
-  /*Accepts a name and then returns hello to that name*/
+  /*Says hello and the name.*/
   return useQuery({
     queryKey: ["Greeting", "SayHello"],
     queryFn: async () => {
