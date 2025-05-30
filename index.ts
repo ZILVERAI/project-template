@@ -53,82 +53,111 @@ async function generatePrisma() {
 	// 	prismaStudioProcess = await startPrismaStudio();
 	// }
 }
+type ProcessType = "frontend" | "backend";
+const processes: {
+	[p in ProcessType]:
+		| Bun.Subprocess<"ignore", "pipe" | "inherit", "pipe" | "inherit">
+		| undefined;
+} = {
+	backend: undefined,
+	frontend: undefined,
+};
 
-const backendWatcher = chokidar.watch("./backend/", {
-	ignored: (path) =>
-		path.includes("node_modules") ||
-		path.includes("generated/prisma") ||
-		path.endsWith(".db") ||
-		path.endsWith(".db-journal"),
-	alwaysStat: true,
-	awaitWriteFinish: true,
-	// atomic: true,
-	usePolling: true,
-});
-async function startBackendProcess() {
-	let backendProcess: Bun.Subprocess | null = null;
-	const spawnOptions: Bun.SpawnOptions.OptionsObject & { cmd: string[] } = {
-		cmd: [
-			"bun",
-			"run",
-			"--filter",
-			"backend",
-			"--elide-lines=60",
-			"dev:server",
-		],
-
-		stdout: "inherit",
-		stderr: "inherit",
-	};
-
-	backendProcess = Bun.spawn(spawnOptions);
-	let timer: NodeJS.Timeout | null = null;
-	backendProcess.unref();
-
-	async function handler(evName: string) {
-		if (backendProcess === null) {
-			// console.log("Change ongoing");
-			return;
-		}
-		if (timer !== null) {
-			clearTimeout(timer);
-			timer = null;
-		}
-
-		timer = setTimeout(async () => {
-			// console.log("Change ", evName);
-			// backendProcess.send("restart");
-			const inst = backendProcess;
-			backendProcess = null;
-			inst.kill("SIGINT");
-			timer = null;
-			await inst.exited;
-			// console.log("Waiting for change...");
-			await generatePrisma(); // TODO: this must be done outside of here.
-			backendProcess = Bun.spawn(spawnOptions);
-			backendProcess.unref();
-		}, 400);
+async function reassignFrontendProcess() {
+	if (processes.frontend) {
+		const p = processes["frontend"];
+		p.kill("SIGINT");
+		await p.exited;
+		console.log(`Frontend process exited.`);
+		processes.frontend = undefined;
 	}
-	// Hook up the on change event listener
-	backendWatcher
-		.on("add", handler)
-		.on("change", handler)
-		.on("unlink", handler)
-		.on("addDir", handler)
-		.on("unlinkDir", handler);
-}
-
-async function run() {
 	const frontendProcess = Bun.spawn({
 		cmd: ["bun", "run", "--filter", "frontend", "dev"],
 		stdout: "pipe",
 		stderr: "pipe",
 	});
+	console.log("Frontend running on PID", frontendProcess.pid);
 
-	// console.log("Servers started.");
-
-	await startBackendProcess();
-	await frontendProcess.exited;
+	processes["frontend"] = frontendProcess;
 }
 
-run();
+async function reassignBackendProcess() {
+	if (processes.backend) {
+		const p = processes["backend"];
+		p.kill("SIGINT");
+		await p.exited;
+		console.log("Backend proccess exited.");
+		processes.backend = undefined;
+	}
+	const backendProcess = Bun.spawn({
+		cmd: ["bun", "run", "dev:server"],
+		cwd: "./backend",
+
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+
+	console.log("Backend running on PID", backendProcess.pid);
+	processes["backend"] = backendProcess;
+}
+
+type GetProcessInfo = {
+	type: ProcessType;
+};
+
+// First ever call so that the processes start.
+await reassignBackendProcess();
+await reassignFrontendProcess();
+
+const s = Bun.serve({
+	port: 7777,
+
+	routes: {
+		"/get-logs": async (request) => {
+			return new Response("Not implemented", {
+				status: 400,
+			});
+		},
+		"/restart-process": async (request) => {
+			const body = (await request.json()) as GetProcessInfo;
+			if (body.type === "backend") {
+				await reassignBackendProcess();
+			} else if (body.type === "frontend") {
+				await reassignFrontendProcess();
+			} else {
+				return new Response("invalid type", {
+					status: 404,
+				});
+			}
+
+			console.log(`Process ${body.type} restarted successfully`);
+
+			return new Response(null, {
+				status: 200,
+			});
+		},
+	},
+});
+
+const stopServer = async () => {
+	await s.stop();
+
+	// On exit, kill both backend and frontend processes too..
+	console.log("Server killed, killing processes...");
+	if (processes.backend) {
+		processes.backend.kill("SIGINT");
+		await processes.backend.exited;
+	}
+
+	if (processes.frontend) {
+		processes.frontend.kill("SIGINT");
+		await processes.frontend.exited;
+	}
+
+	console.log("All processes have been killed.");
+};
+
+process.on("SIGTERM", stopServer);
+process.on("SIGINT", stopServer);
+
+console.log("Server running...");
