@@ -12,7 +12,6 @@ const greetingImplementation = new ServiceImplementationBuilder(
 	.registerProcedureImplementation("StreamedName", async function* (input) {
 		for (const letter of input.name.split("")) {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
-			// throw new Error("XD");
 			yield letter;
 		}
 	})
