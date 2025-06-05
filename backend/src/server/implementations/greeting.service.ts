@@ -9,12 +9,16 @@ const greetingImplementation = new ServiceImplementationBuilder(
 			greeting: `Hello ${input.name}`,
 		};
 	})
-	.registerProcedureImplementation("StreamedName", async function* (input) {
-		for (const letter of input.name.split("")) {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			yield letter;
-		}
-	})
+	.registerProcedureImplementation(
+		"StreamedName",
+		async function (input, req, ctx, conn) {
+			for (const letter of input.name.split("")) {
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+				conn.write(letter);
+			}
+			await conn.close();
+		},
+	)
 	.build();
 
 export { greetingImplementation };

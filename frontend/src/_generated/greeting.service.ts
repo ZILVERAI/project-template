@@ -1,4 +1,5 @@
 import {useQuery, UseQueryOptions} from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import {z} from "zod"
 
 // ---- Service Name: Greeting ----
@@ -53,5 +54,104 @@ export function useGreetingSayHelloQuery(
     },
     ...extraOptions,
   });
+}
+
+export const GreetingStreamedNameSubscriptionInputSchema = z
+  .object({ name: z.string() })
+  .strict();
+export type GreetingStreamedNameOutputType = string;
+
+export function useGreetingStreamedNameSubscription(
+  args: z.infer<typeof GreetingStreamedNameSubscriptionInputSchema>,
+  extraOptions?: {
+    onError?: (errorMessage: string) => void; // Callback that executes when there's an error
+    onClose?: () => void; // Callback that executes when the connection has been closed by the server
+  },
+) {
+  /*Streams the given name, letter by letter.*/
+  const sourceRef = useRef<EventSource>();
+  const [messages, setMessages] = useState<
+    Array<GreetingStreamedNameOutputType>
+  >([]);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  useEffect(() => {
+    if (
+      sourceRef.current &&
+      sourceRef.current?.readyState === sourceRef.current?.OPEN
+    ) {
+      // The connection is already stablished.
+      return;
+    }
+
+    const aborter = new AbortController();
+    const targetURL = new URL("/_api", window.location.origin);
+    const fullPayload = {
+      service: "Greeting",
+      procedure: "StreamedName",
+      data: args,
+    };
+    const stringifiedArguments = JSON.stringify(fullPayload);
+    const encodedArguments = encodeURIComponent(stringifiedArguments);
+    targetURL.searchParams.set("payload", encodedArguments);
+
+    const source = new EventSource(targetURL);
+    sourceRef.current = source;
+
+    source.addEventListener(
+      "open",
+      () => {
+        setIsConnected(true);
+      },
+      {
+        signal: aborter.signal,
+      },
+    );
+
+    source.addEventListener(
+      "error",
+      () => {
+        if (extraOptions?.onError) {
+          extraOptions.onError("Failed to connect.");
+        }
+        setIsConnected(false);
+        console.warn("No errror handler has been set for the event source");
+      },
+      {
+        signal: aborter.signal,
+      },
+    );
+
+    source.addEventListener(
+      "content",
+      (ev) => {
+        setMessages((prev) => [...prev, ev.data]);
+      },
+      {
+        signal: aborter.signal,
+      },
+    );
+
+    source.addEventListener(
+      "close",
+      () => {
+        source.close();
+        if (extraOptions?.onClose) {
+          extraOptions.onClose();
+        }
+      },
+      {
+        signal: aborter.signal,
+      },
+    );
+
+    return () => {
+      aborter.abort();
+    };
+  }, [extraOptions, args]);
+
+  return {
+    messages,
+    isConnected,
+  };
 }
 //----
