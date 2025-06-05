@@ -80,24 +80,24 @@ export function useGreetingStreamedNameSubscription(
       sourceRef.current?.readyState === sourceRef.current?.OPEN
     ) {
       // The connection is already stablished.
-      return;
+    } else {
+      const targetURL = new URL("/_api", window.location.origin);
+      const fullPayload = {
+        service: "Greeting",
+        procedure: "StreamedName",
+        data: args,
+      };
+      const stringifiedArguments = JSON.stringify(fullPayload);
+      const encodedArguments = encodeURIComponent(stringifiedArguments);
+      targetURL.searchParams.set("payload", encodedArguments);
+
+      const source = new EventSource(targetURL);
+      sourceRef.current = source;
     }
 
     const aborter = new AbortController();
-    const targetURL = new URL("/_api", window.location.origin);
-    const fullPayload = {
-      service: "Greeting",
-      procedure: "StreamedName",
-      data: args,
-    };
-    const stringifiedArguments = JSON.stringify(fullPayload);
-    const encodedArguments = encodeURIComponent(stringifiedArguments);
-    targetURL.searchParams.set("payload", encodedArguments);
 
-    const source = new EventSource(targetURL);
-    sourceRef.current = source;
-
-    source.addEventListener(
+    sourceRef.current.addEventListener(
       "open",
       () => {
         setIsConnected(true);
@@ -107,7 +107,7 @@ export function useGreetingStreamedNameSubscription(
       },
     );
 
-    source.addEventListener(
+    sourceRef.current.addEventListener(
       "error",
       () => {
         if (extraOptions?.onError) {
@@ -121,7 +121,7 @@ export function useGreetingStreamedNameSubscription(
       },
     );
 
-    source.addEventListener(
+    sourceRef.current.addEventListener(
       "content",
       (ev) => {
         setMessages((prev) => [...prev, ev.data]);
@@ -131,10 +131,10 @@ export function useGreetingStreamedNameSubscription(
       },
     );
 
-    source.addEventListener(
+    sourceRef.current.addEventListener(
       "close",
       () => {
-        source.close();
+        sourceRef.current?.close();
         if (extraOptions?.onClose) {
           extraOptions.onClose();
         }
