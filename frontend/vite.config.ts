@@ -109,15 +109,19 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig(({ mode }) => {
-	const pluginsArray: Array<PluginOption> = [
-		TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
+	const pluginsArray: Array<PluginOption> = [];
+
+	pluginsArray.push(
+		{
+			...TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
+			enforce: "pre",
+		},
 		react({
 			babel: {
 				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
 			},
 		}),
-	];
-
+	);
 	if (mode === "development") {
 		pluginsArray.push(tagPlugin());
 	}
