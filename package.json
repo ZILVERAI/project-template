@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "start": "bun run index.ts",
+    "build-frontend": "bun run --filter frontend build",
     "generate": "bunx zynapse-cli -I ./backend/src/api.schema.ts -O ./frontend/src/_generated"
   },
   "devDependencies": {
