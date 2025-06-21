@@ -3,7 +3,12 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { parse, ParserOptions } from "@babel/parser";
 import _traverse from "@babel/traverse";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import {
+	tanstackRouter,
+	tanstackRouterAutoImport,
+	tanStackRouterCodeSplitter,
+	tanstackRouterGenerator,
+} from "@tanstack/router-plugin/vite";
 
 import MagicString from "magic-string";
 // import { walk } from "estree-walker";
@@ -39,6 +44,7 @@ function tagPlugin(): Plugin {
 				const abstracttree = parse(code, parseConfig);
 
 				const magicString = new MagicString(code);
+
 				let traverse: typeof _traverse;
 
 				if (typeof _traverse === "function") {
@@ -54,6 +60,10 @@ function tagPlugin(): Plugin {
 					enter(nodePath) {
 						// if (nodePath.node.type === "JSXElement") {
 						// 	console.log(nodePath.node.nam);
+						// }
+						// const s = JSON.stringify(nodePath);
+						// if (s.includes("p-2")) {
+						// 	console.log(s);
 						// }
 
 						if (nodePath.node.type === "JSXOpeningElement") {
@@ -109,21 +119,31 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig(({ mode }) => {
-	const pluginsArray: Array<PluginOption> = [];
-
-	pluginsArray.push(
-		{
-			...TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
-			enforce: "pre",
-		},
+	const pluginsArray: Array<PluginOption> = [
 		react({
 			babel: {
 				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
 			},
 		}),
-	);
+		tanstackRouterAutoImport({
+			target: "react",
+			enableRouteGeneration: true,
+			enableRouteTreeFormatting: true,
+		}),
+		tanstackRouterGenerator({
+			target: "react",
+		}),
+	];
+
 	if (mode === "development") {
 		pluginsArray.push(tagPlugin());
+	} else {
+		pluginsArray.unshift(
+			tanStackRouterCodeSplitter({
+				target: "react",
+				autoCodeSplitting: true,
+			}),
+		);
 	}
 
 	return {
