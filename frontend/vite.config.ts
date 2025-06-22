@@ -4,7 +4,6 @@ import path from "path";
 import { parse, ParserOptions } from "@babel/parser";
 import _traverse from "@babel/traverse";
 import {
-	tanstackRouter,
 	tanstackRouterAutoImport,
 	tanStackRouterCodeSplitter,
 	tanstackRouterGenerator,
