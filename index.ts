@@ -92,6 +92,11 @@ async function reassignFrontendProcess() {
 		cwd: "./frontend",
 		stdout: "pipe",
 		stderr: "pipe",
+		env: {
+			...process.env,
+			FORCE_COLOR: "1",
+			COLORTERM: "truecolor",
+		},
 	});
 	console.log("Frontend running on PID", frontendProcess.pid);
 
@@ -115,6 +120,11 @@ async function reassignBackendProcess() {
 		cwd: "./backend",
 		stdout: "pipe",
 		stderr: "pipe",
+		env: {
+			...process.env,
+			FORCE_COLOR: "1",
+			COLORTERM: "truecolor",
+		},
 	});
 
 	console.log("Backend running on PID", backendProcess.pid);
