@@ -63,6 +63,22 @@ const processes: {
 	frontend: undefined,
 };
 
+// Log buffers to handle multiple connections
+const logBuffers: {
+	[p in ProcessType]: string[];
+} = {
+	backend: [],
+	frontend: [],
+};
+
+// Active log streams
+const activeLogStreams: {
+	[p in ProcessType]: Set<ReadableStreamDefaultController>;
+} = {
+	backend: new Set(),
+	frontend: new Set(),
+};
+
 async function reassignFrontendProcess() {
 	if (processes.frontend) {
 		const p = processes["frontend"];
@@ -79,6 +95,10 @@ async function reassignFrontendProcess() {
 	console.log("Frontend running on PID", frontendProcess.pid);
 
 	processes["frontend"] = frontendProcess;
+
+	// Clear old logs and start capturing new ones
+	logBuffers.frontend = [];
+	setupLogCapture("frontend", frontendProcess);
 }
 
 async function reassignBackendProcess() {
@@ -92,13 +112,70 @@ async function reassignBackendProcess() {
 	const backendProcess = Bun.spawn({
 		cmd: ["bun", "run", "dev:server"],
 		cwd: "./backend",
-
-		stdout: "inherit",
-		stderr: "inherit",
+		stdout: "pipe",
+		stderr: "pipe",
 	});
 
 	console.log("Backend running on PID", backendProcess.pid);
 	processes["backend"] = backendProcess;
+
+	// Clear old logs and start capturing new ones
+	logBuffers.backend = [];
+	setupLogCapture("backend", backendProcess);
+}
+
+async function setupLogCapture(
+	processType: ProcessType,
+	process: Bun.Subprocess,
+) {
+	console.log(`Setting up log capture for ${processType}`);
+	const decoder = new TextDecoder();
+
+	const captureStream = async (
+		reader: ReadableStreamDefaultReader<Uint8Array>,
+	) => {
+		try {
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+
+				const text = decoder.decode(value);
+				console.log(`[${processType}] Captured: ${text.substring(0, 100)}...`);
+				logBuffers[processType].push(text);
+
+				// Broadcast to all active streams
+				activeLogStreams[processType].forEach((controller) => {
+					try {
+						controller.enqueue(text);
+					} catch (error) {
+						// Remove broken controllers
+						console.log("Error sending bytes", error);
+						activeLogStreams[processType].delete(controller);
+					}
+				});
+			}
+		} catch (error) {
+			console.log(`Log capture error for ${processType}:`, error);
+		}
+	};
+
+	// Capture both stdout and stderr
+	const stdoutReader = process.stdout.getReader();
+	const stderrReader = process.stderr.getReader();
+
+	Promise.all([captureStream(stdoutReader), captureStream(stderrReader)]).then(
+		() => {
+			// Close all active streams when process ends
+			activeLogStreams[processType].forEach((controller) => {
+				try {
+					controller.close();
+				} catch (error) {
+					// Controller might already be closed
+				}
+			});
+			activeLogStreams[processType].clear();
+		},
+	);
 }
 
 type GetProcessInfo = {
@@ -111,11 +188,70 @@ await reassignFrontendProcess();
 
 const s = Bun.serve({
 	port: 7777,
-
+	idleTimeout: 60,
 	routes: {
 		"/get-logs": async (request) => {
-			return new Response("Not implemented", {
-				status: 400,
+			const processType = new URL(request.url).searchParams.get("type");
+			if (!processType) {
+				console.error("Missing type");
+				return new Response("missing type", {
+					status: 404,
+				});
+			}
+			const process = processes[processType];
+
+			if (!process) {
+				return new Response("Process not found", {
+					status: 404,
+				});
+			}
+
+			let streamController: ReadableStreamDefaultController;
+			let timer: Timer; // Used to avoid the connection from dropping.
+
+			const stream = new ReadableStream({
+				start(controller) {
+					streamController = controller;
+
+					// Send existing logs first
+					logBuffers[processType].forEach((log) => {
+						// console.log("Enqueing", log);
+						try {
+							controller.enqueue(`data: ${log}\n\n`);
+						} catch {
+							console.error(
+								"Attempted to enqueue data but the controller was already closed",
+							);
+						}
+					});
+					timer = setInterval(() => {
+						try {
+							controller.enqueue(`: keepalive\n\n`);
+						} catch {
+							console.error(
+								"Keepalive signal wasn't sent because the controller was already closed.",
+							);
+							clearInterval(timer);
+						}
+					}, 5000);
+
+					// Add this controller to active streams for future logs
+					activeLogStreams[processType].add(controller);
+				},
+				cancel() {
+					clearInterval(timer);
+					// Remove controller when stream is cancelled
+					if (streamController) {
+						activeLogStreams[processType].delete(streamController);
+					}
+				},
+			});
+
+			return new Response(stream, {
+				headers: {
+					"Content-Type": "text/event-stream",
+					"Cache-Control": "no-cache",
+				},
 			});
 		},
 		"/restart-process": async (request) => {
