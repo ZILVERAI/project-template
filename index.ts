@@ -194,6 +194,7 @@ type GetProcessInfo = {
 };
 
 // First ever call so that the processes start.
+await startPrismaStudio();
 await reassignBackendProcess();
 await reassignFrontendProcess();
 
