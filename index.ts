@@ -88,7 +88,8 @@ async function reassignFrontendProcess() {
 		processes.frontend = undefined;
 	}
 	const frontendProcess = Bun.spawn({
-		cmd: ["bun", "run", "--filter", "frontend", "dev"],
+		cmd: ["bun", "run", "dev"],
+		cwd: "./frontend",
 		stdout: "pipe",
 		stderr: "pipe",
 	});
@@ -146,7 +147,7 @@ async function setupLogCapture(
 				// Broadcast to all active streams
 				activeLogStreams[processType].forEach((controller) => {
 					try {
-						controller.enqueue(text);
+						controller.enqueue(`data: ${text}\n\n`);
 					} catch (error) {
 						// Remove broken controllers
 						console.log("Error sending bytes", error);
