@@ -15,7 +15,7 @@ async function startPrismaStudio(): Promise<Bun.Subprocess> {
 }
 
 async function generatePrisma() {
-	let prismaStudioProcess: Bun.Subprocess | null = null;
+	// let prismaStudioProcess: Bun.Subprocess | null = null;
 	const sp = Bun.spawn({
 		cwd: "./backend",
 		cmd: ["bunx", "prisma", "migrate", "deploy"],
@@ -186,7 +186,7 @@ type GetProcessInfo = {
 };
 
 // First ever call so that the processes start.
-prismaStudioProcess = await startPrismaStudio();
+// prismaStudioProcess = await startPrismaStudio();
 await reassignBackendProcess();
 await reassignFrontendProcess();
 
