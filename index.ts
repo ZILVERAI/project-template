@@ -6,17 +6,7 @@ import chokidar from "chokidar";
 async function startPrismaStudio(): Promise<Bun.Subprocess> {
 	const sp = Bun.spawn({
 		cwd: "./backend",
-		cmd: [
-			"bunx",
-			"prisma",
-			"studio",
-			"--port",
-			"1337",
-			"--hostname",
-			"0.0.0.0",
-			"--browser",
-			"none",
-		],
+		cmd: ["bunx", "prisma", "studio", "--port", "1337", "--browser", "none"],
 		stdout: "inherit",
 		stderr: "inherit",
 	});
