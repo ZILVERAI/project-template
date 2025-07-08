@@ -10,7 +10,8 @@
     "dev:server": "bun run src/server/index.ts",
     "lint": "eslint src",
     "type-check": "tsc --noEmit",
-    "schema-type-check": "tsc -p ./tsconfig.schema.json"
+    "schema-type-check": "tsc -p ./tsconfig.schema.json",
+    "studio": "bunx prisma studio -p 8989"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",

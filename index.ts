@@ -53,6 +53,8 @@ const processes: {
 	frontend: undefined,
 };
 
+let prismaStudioProcess: Bun.Subprocess | null = null;
+
 // Log buffers to handle multiple connections
 const logBuffers: {
 	[p in ProcessType]: string[];
@@ -184,7 +186,7 @@ type GetProcessInfo = {
 };
 
 // First ever call so that the processes start.
-await startPrismaStudio();
+prismaStudioProcess = await startPrismaStudio();
 await reassignBackendProcess();
 await reassignFrontendProcess();
 
