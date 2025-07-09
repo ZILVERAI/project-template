@@ -54,7 +54,7 @@ function tagPlugin(): Plugin {
 				}
 
 				// console.log(typeof traverse);
-
+				//@ts-expect-error Unknown type
 				traverse(abstracttree, {
 					enter(nodePath) {
 						// if (nodePath.node.type === "JSXElement") {
