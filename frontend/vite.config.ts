@@ -119,18 +119,18 @@ const ReactCompilerConfig = {
 
 export default defineConfig(({ mode }) => {
 	const pluginsArray: Array<PluginOption> = [
-		react({
-			babel: {
-				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-			},
+		tanstackRouterGenerator({
+			target: "react",
 		}),
 		tanstackRouterAutoImport({
 			target: "react",
 			enableRouteGeneration: true,
 			enableRouteTreeFormatting: true,
 		}),
-		tanstackRouterGenerator({
-			target: "react",
+		react({
+			babel: {
+				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+			},
 		}),
 	];
 
