@@ -6,7 +6,6 @@ import _traverse from "@babel/traverse";
 import {
 	tanstackRouterAutoImport,
 	tanStackRouterCodeSplitter,
-	tanstackRouterGenerator,
 } from "@tanstack/router-plugin/vite";
 
 import MagicString from "magic-string";
@@ -119,9 +118,6 @@ const ReactCompilerConfig = {
 
 export default defineConfig(({ mode }) => {
 	const pluginsArray: Array<PluginOption> = [
-		tanstackRouterGenerator({
-			target: "react",
-		}),
 		tanstackRouterAutoImport({
 			target: "react",
 			enableRouteGeneration: true,
