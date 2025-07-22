@@ -75,6 +75,8 @@ async function reassignFrontendProcess() {
 	if (processes.frontend) {
 		const p = processes["frontend"];
 		p.kill("SIGINT");
+		p.kill("SIGTERM");
+		console.log("Waiting for frontend process to die..");
 		await p.exited;
 		console.log(`Frontend process exited.`);
 		processes.frontend = undefined;
