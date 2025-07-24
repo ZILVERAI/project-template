@@ -116,6 +116,7 @@ async function reassignBackendProcess(enviroment: Record<string, string>) {
 		env: {
 			...process.env,
 			...enviroment,
+			DATABASE_URL: "file:./dev.db", // TODO: This needs to not be hardcoded, I will get to it once we start with dynamic dbs
 			FORCE_COLOR: "1",
 			COLORTERM: "truecolor",
 		},
