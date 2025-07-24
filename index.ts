@@ -103,7 +103,7 @@ async function reassignFrontendProcess() {
 async function reassignBackendProcess(enviroment: Record<string, string>) {
 	if (processes.backend) {
 		const p = processes["backend"];
-		p.kill("SIGKILL");
+		p.kill();
 		await p.exited;
 		console.log("Backend proccess exited.");
 		processes.backend = undefined;
