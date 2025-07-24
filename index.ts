@@ -100,10 +100,10 @@ async function reassignFrontendProcess() {
 	setupLogCapture("frontend", frontendProcess);
 }
 
-async function reassignBackendProcess() {
+async function reassignBackendProcess(enviroment: Record<string, string>) {
 	if (processes.backend) {
 		const p = processes["backend"];
-		p.kill("SIGINT");
+		p.kill("SIGKILL");
 		await p.exited;
 		console.log("Backend proccess exited.");
 		processes.backend = undefined;
@@ -115,6 +115,7 @@ async function reassignBackendProcess() {
 		stderr: "pipe",
 		env: {
 			...process.env,
+			...enviroment,
 			FORCE_COLOR: "1",
 			COLORTERM: "truecolor",
 		},
@@ -184,11 +185,12 @@ async function setupLogCapture(
 
 type GetProcessInfo = {
 	type: ProcessType;
+	envVars: Record<string, string>;
 };
 
 // First ever call so that the processes start.
 // prismaStudioProcess = await startPrismaStudio();
-await reassignBackendProcess();
+await reassignBackendProcess({}); // Initially without env variables because later will be collected from restart process.
 await reassignFrontendProcess();
 
 const s = Bun.serve({
@@ -262,7 +264,7 @@ const s = Bun.serve({
 		"/restart-process": async (request) => {
 			const body = (await request.json()) as GetProcessInfo;
 			if (body.type === "backend") {
-				await reassignBackendProcess();
+				await reassignBackendProcess(body.envVars);
 			} else if (body.type === "frontend") {
 				await reassignFrontendProcess();
 			} else {
