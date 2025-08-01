@@ -1,3 +1,7 @@
-import { PrismaClient } from "@generated/prisma"; // IMPORTANT: Always import prisma client and everything you need from prisma, from the alias '@generated/prisma'
+import { drizzle } from "drizzle-orm/libsql";
 
-export const client = new PrismaClient();
+export const client = drizzle({
+	connection: {
+		url: process.env.DATABASE_URL!,
+	},
+});

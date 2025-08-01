@@ -14,7 +14,11 @@
     "studio": "bunx prisma studio -p 8989"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.10",
     "@prisma/client": "^6.8.2",
+    "dotenv": "^17.2.1",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.4",
     "zod": "^3.24.2",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   },
@@ -22,7 +26,6 @@
     "@types/bun": "^1.1.12",
     "@typescript/native-preview": "^7.0.0-dev.20250709.1",
     "eslint": "^9.21.0",
-    "prisma": "^6.11.1",
     "typescript": "^5.8.2"
   },
   "version": "11.1.0",
