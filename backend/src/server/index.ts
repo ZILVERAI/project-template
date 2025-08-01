@@ -8,11 +8,4 @@ const server = new Server(apiSchema, {
 	Greeting: greetingImplementation,
 });
 
-await client.insert(usersTable).values({
-	age: 19,
-	email: "asd@asd.com",
-	name: "asd",
-	something: "asd",
-});
-
 server.start();
