@@ -198,6 +198,11 @@ const s = Bun.serve({
 	port: 7777,
 	idleTimeout: 60,
 	routes: {
+		"/health": async () => {
+			return new Response("Ok", {
+				status: 200,
+			});
+		},
 		"/get-logs": async (request) => {
 			const processType = new URL(request.url).searchParams.get("type");
 			if (!processType) {
