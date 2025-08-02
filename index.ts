@@ -2,11 +2,20 @@
 // on docker
 
 import chokidar from "chokidar";
+
 // TODO: This needs to be moved to the container controller so that crashes and automatic restarts can be handled.
-async function startPrismaStudio(): Promise<Bun.Subprocess> {
+async function startDrizzleStudio(): Promise<Bun.Subprocess> {
 	const sp = Bun.spawn({
 		cwd: "./backend",
-		cmd: ["bunx", "prisma", "studio", "--port", "1337", "--browser", "none"],
+		cmd: [
+			"bunx",
+			"drizzle-kit",
+			"studio",
+			"--host",
+			"0.0.0.0",
+			"--port",
+			"1337",
+		],
 		stdout: "inherit",
 		stderr: "inherit",
 	});

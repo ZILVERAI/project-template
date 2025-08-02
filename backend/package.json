@@ -11,7 +11,7 @@
     "lint": "eslint src",
     "type-check": "tsc --noEmit",
     "schema-type-check": "tsc -p ./tsconfig.schema.json",
-    "studio": "bunx prisma studio -p 8989"
+    "studio": "bunx drizzle-kit studio --host 0.0.0.0 --port 8989 --verbose"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

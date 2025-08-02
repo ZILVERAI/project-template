@@ -22,10 +22,12 @@
     "typescript": "^5.7.3"
   },
   "trustedDependencies": [
+    "@prisma/client",
     "@swc/core",
-    "esbuild",
+    "esbuild"
   ],
   "dependencies": {
+    "@prisma/studio-core": "^0.5.1",
     "chokidar": "^4.0.3",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   }
