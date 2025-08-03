@@ -1,0 +1,4 @@
+CREATE TABLE users_table (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL
+);

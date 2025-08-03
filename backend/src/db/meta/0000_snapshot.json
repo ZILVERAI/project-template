@@ -1,0 +1,83 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {
+    "users_table": {
+      "name": "users_table",
+      "columns": {
+        "id": {
+          "autoincrement": true,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "age": {
+          "autoincrement": false,
+          "name": "age",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "something": {
+          "autoincrement": false,
+          "name": "something",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "somethingElse": {
+          "autoincrement": false,
+          "name": "somethingElse",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "somethingEvenElse": {
+          "default": "'Cool'",
+          "autoincrement": false,
+          "name": "somethingEvenElse",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "users_table_email_unique": {
+          "name": "users_table_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
