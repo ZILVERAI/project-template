@@ -2,7 +2,12 @@
 // on docker
 
 import chokidar from "chokidar";
-import { createPrismaPostgresHttpClient } from "@prisma/studio-core/data/ppg";
+import {
+	createPostgresJSExecutor,
+	createPostgresJSAdapter,
+} from "@prisma/studio-core/data/postgresjs";
+import postgres from "postgres";
+
 import { Query } from "@prisma/studio-core/data";
 import { serializeError } from "@prisma/studio-core/data/bff";
 
@@ -204,27 +209,46 @@ type GetProcessInfo = {
 // prismaStudioProcess = await startPrismaStudio();
 await reassignBackendProcess({}); // Initially without env variables because later will be collected from restart process.
 await reassignFrontendProcess();
+const client = postgres(process.env.DATABASE_URL!);
 
 const s = Bun.serve({
 	port: 7777,
 	idleTimeout: 60,
 	routes: {
 		"/studio": async (request) => {
+			const CORS_HEADERS = {
+				"Access-Control-Allow-Origin": "*", // Or a specific origin
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Content-Type, Authorization", // Add other headers as needed
+			};
+
+			if (request.method === "OPTIONS") {
+				return new Response(null, {
+					status: 200,
+					headers: CORS_HEADERS,
+				});
+			}
+
 			const { query } = (await request.json()) as { query: Query };
 			if (!process.env.DATABASE_URL) {
 				return new Response("Not available", {
 					status: 404,
 				});
 			}
-			const client = createPrismaPostgresHttpClient({
-				url: process.env.DATABASE_URL,
-			}); // TODO: Maybe no need to re-create it every time?
-			const [error, results] = await client.execute(query);
+
+			const executor = createPostgresJSExecutor(client, {
+				logging: true,
+			});
+
+			const [error, results] = await executor.execute(query);
 			if (error) {
 				return Response.json([serializeError(error)]);
 			}
+			console.log("Res", results);
 
-			return Response.json([null, results]);
+			return Response.json([null, results], {
+				headers: CORS_HEADERS,
+			});
 		},
 		"/health": async () => {
 			return new Response("Ok", {
