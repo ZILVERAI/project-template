@@ -12,9 +12,9 @@
     "type-check": "tsc --noEmit",
     "schema-type-check": "tsc -p ./tsconfig.schema.json",
     "studio": "bunx drizzle-kit studio --host 0.0.0.0 --port 8989 --verbose",
-    "apply-migrations": "migrate -path migrations -database $SCHEMA_DATABASE_URL up",
-    "force-migration-version": "migrate -path migrations -database $SCHEMA_DATABASE_URL force",
-    "get-current-migration-version": "migrate -path migrations -database $SCHEMA_DATABASE_URL version"
+    "apply-migrations": "migrate -path migrations -database $DATABASE_URL up",
+    "force-migration-version": "migrate -path migrations -database $DATABASE_URL force",
+    "get-current-migration-version": "migrate -path migrations -database $DATABASE_URL version"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
