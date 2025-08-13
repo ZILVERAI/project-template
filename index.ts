@@ -2,6 +2,9 @@
 // on docker
 
 import chokidar from "chokidar";
+import { createPrismaPostgresHttpClient } from "@prisma/studio-core/data/ppg";
+import { Query } from "@prisma/studio-core/data";
+import { serializeError } from "@prisma/studio-core/data/bff";
 
 // TODO: This needs to be moved to the container controller so that crashes and automatic restarts can be handled.
 async function startDrizzleStudio(): Promise<Bun.Subprocess> {
@@ -206,6 +209,23 @@ const s = Bun.serve({
 	port: 7777,
 	idleTimeout: 60,
 	routes: {
+		"/studio": async (request) => {
+			const { query } = (await request.json()) as { query: Query };
+			if (!process.env.DATABASE_URL) {
+				return new Response("Not available", {
+					status: 404,
+				});
+			}
+			const client = createPrismaPostgresHttpClient({
+				url: process.env.DATABASE_URL,
+			}); // TODO: Maybe no need to re-create it every time?
+			const [error, results] = await client.execute(query);
+			if (error) {
+				return Response.json([serializeError(error)]);
+			}
+
+			return Response.json([null, results]);
+		},
 		"/health": async () => {
 			return new Response("Ok", {
 				status: 200,
