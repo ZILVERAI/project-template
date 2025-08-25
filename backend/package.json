@@ -19,9 +19,11 @@
   "dependencies": {
     "@libsql/client": "^0.15.10",
     "dotenv": "^17.2.1",
+    "drizzle-introspect": "git+https://github.com/KatIsCoding/drizzle-introspection.git",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.4",
     "postgres": "^3.4.7",
+    "postgres-js": "^0.1.0",
     "zod": "^3.24.2",
     "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
   },
