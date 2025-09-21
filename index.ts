@@ -210,6 +210,9 @@ type GetProcessInfo = {
 await reassignBackendProcess({}); // Initially without env variables because later will be collected from restart process.
 await reassignFrontendProcess();
 const client = postgres(process.env.DATABASE_URL!);
+const executor = createPostgresJSExecutor(client, {
+	logging: true,
+});
 
 const s = Bun.serve({
 	port: 7777,
@@ -235,10 +238,6 @@ const s = Bun.serve({
 					status: 404,
 				});
 			}
-
-			const executor = createPostgresJSExecutor(client, {
-				logging: true,
-			});
 
 			const [error, results] = await executor.execute(query);
 			if (error) {
