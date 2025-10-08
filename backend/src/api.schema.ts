@@ -5,12 +5,12 @@ const greetingService = new Service("Greeting")
 	.addProcedure({
 		description: "Says hello and the name.",
 		input: z.object({
-			name: z.string(),
+			name: z.record(z.string()),
 		}),
 		method: "QUERY",
 		name: "SayHello",
 		output: z.object({
-			greeting: z.string(),
+			greeting: z.record(z.string()),
 		}),
 	})
 	.addProcedure({
