@@ -33,7 +33,7 @@
         "zynapse": "git+https://github.com/ZILVERAI/zynapse.git",
       },
       "devDependencies": {
-        "@types/bun": "^1.1.12",
+        "@types/bun": "^1.3.2",
         "@types/node": "^24.3.1",
         "@typescript/native-preview": "^7.0.0-dev.20250709.1",
         "eslint": "^9.21.0",
@@ -584,7 +584,7 @@
 
     "@types/babel__traverse": ["@types/babel__traverse@7.28.0", "", { "dependencies": { "@babel/types": "^7.28.2" } }, "sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q=="],
 
-    "@types/bun": ["@types/bun@1.2.21", "", { "dependencies": { "bun-types": "1.2.21" } }, "sha512-NiDnvEqmbfQ6dmZ3EeUO577s4P5bf4HCTXtI6trMc6f6RzirY5IrF3aIookuSpyslFzrnvv2lmEWv5HyC1X79A=="],
+    "@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
     "@types/d3-array": ["@types/d3-array@3.2.1", "", {}, "sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg=="],
 
@@ -708,7 +708,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.2.21", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-sa2Tj77Ijc/NTLS0/Odjq/qngmEPZfbfnOERi0KRUYhT9R8M4VBioWVmMWE5GrYbKMc+5lVybXygLdibHaqVqw=="],
+    "bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
     "cacheable": ["cacheable@1.10.4", "", { "dependencies": { "hookified": "^1.11.0", "keyv": "^5.5.0" } }, "sha512-Gd7ccIUkZ9TE2odLQVS+PDjIvQCdJKUlLdJRVvZu0aipj07Qfx+XIej7hhDrKGGoIxV5m5fT/kOJNJPQhQneRg=="],
 
@@ -814,7 +814,7 @@
 
     "dotenv": ["dotenv@17.2.2", "", {}, "sha512-Sf2LSQP+bOlhKWWyhFsn0UsfdK/kCWRv1iuA2gXAwt3dyNabr6QSj00I2V10pidqz69soatm9ZwZvpQMTIOd5Q=="],
 
-    "drizzle-introspect": ["pg-introspect@github:KatIsCoding/drizzle-introspection#729fda5", { "dependencies": { "camelcase": "^8.0.0", "chalk": "^5.6.0", "drizzle-orm": "^0.44.4", "esbuild-register": "^3.6.0", "hanji": "^0.0.5", "minimatch": "^10.0.3", "pg": "^8.16.3", "pluralize": "^8.0.0", "postgres": "^3.4.7" }, "peerDependencies": { "typescript": "^5" }, "bin": { "pg-introspect": "./src/main.ts" } }, "KatIsCoding-drizzle-introspection-729fda5"],
+    "drizzle-introspect": ["pg-introspect@github:KatIsCoding/drizzle-introspection#5b3ea3c", { "dependencies": { "camelcase": "^8.0.0", "chalk": "^5.6.0", "drizzle-orm": "^0.44.4", "esbuild-register": "^3.6.0", "hanji": "^0.0.5", "minimatch": "^10.0.3", "pg": "^8.16.3", "pluralize": "^8.0.0", "postgres": "^3.4.7" }, "peerDependencies": { "typescript": "^5" }, "bin": { "pg-introspect": "./src/main.ts" } }, "KatIsCoding-drizzle-introspection-5b3ea3c"],
 
     "drizzle-kit": ["drizzle-kit@0.31.4", "", { "dependencies": { "@drizzle-team/brocli": "^0.10.2", "@esbuild-kit/esm-loader": "^2.5.5", "esbuild": "^0.25.4", "esbuild-register": "^3.5.0" }, "bin": { "drizzle-kit": "bin.cjs" } }, "sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA=="],
 
@@ -1402,7 +1402,7 @@
 
     "zod-validation-error": ["zod-validation-error@3.5.3", "", { "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-OT5Y8lbUadqVZCsnyFaTQ4/O2mys4tj7PqhdbBCp7McPwvIEKfPtdA6QfPeFQK2/Rz5LgwmAXRJTugBNBi0btw=="],
 
-    "zynapse": ["zynapse@github:ZILVERAI/zynapse#b620675", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./src/cli/index.ts" } }, "ZILVERAI-zynapse-b620675"],
+    "zynapse": ["zynapse@github:ZILVERAI/zynapse#b6e38ff", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./src/cli/index.ts" } }, "ZILVERAI-zynapse-b6e38ff"],
 
     "@babel/core/debug": ["debug@4.4.1", "", { "dependencies": { "ms": "^2.1.3" } }, "sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ=="],
 
@@ -1454,7 +1454,7 @@
 
     "anymatch/picomatch": ["picomatch@2.3.1", "", {}, "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA=="],
 
-    "backend/zynapse": ["zynapse@github:ZILVERAI/zynapse#b620675", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./src/cli/index.ts" } }, "ZILVERAI-zynapse-b620675"],
+    "backend/zynapse": ["zynapse@github:ZILVERAI/zynapse#b6e38ff", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./src/cli/index.ts" } }, "ZILVERAI-zynapse-b6e38ff"],
 
     "brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
