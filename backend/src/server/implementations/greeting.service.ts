@@ -6,7 +6,7 @@ const greetingImplementation = new ServiceImplementationBuilder(
 )
 	.registerProcedureImplementation("SayHello", async (input) => {
 		return {
-			greeting: `Hello ${input.name}`,
+			greeting: { msg: `Hello ${input.name}` },
 		};
 	})
 	.registerProcedureImplementation(
