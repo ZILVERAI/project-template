@@ -29,6 +29,6 @@
   "dependencies": {
     "@prisma/studio-core": "^0.5.1",
     "chokidar": "^4.0.3",
-    "zynapse": "git+https://github.com/ZILVERAI/zynapse.git"
+    "zynapse": "latest"
   }
 }
