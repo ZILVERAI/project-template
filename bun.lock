@@ -30,7 +30,7 @@
         "postgres": "^3.4.7",
         "postgres-js": "^0.1.0",
         "zod": "^3.24.2",
-        "zynapse": "^0.1.0",
+        "zynapse": "^0.1.2",
       },
       "devDependencies": {
         "@types/bun": "1.1.12",
@@ -1402,7 +1402,7 @@
 
     "zod-validation-error": ["zod-validation-error@3.5.3", "", { "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-OT5Y8lbUadqVZCsnyFaTQ4/O2mys4tj7PqhdbBCp7McPwvIEKfPtdA6QfPeFQK2/Rz5LgwmAXRJTugBNBi0btw=="],
 
-    "zynapse": ["zynapse@github:ZILVERAI/zynapse#05b86a4", { "dependencies": { "@types/bun": "^1.3.2", "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./src/cli/index.ts" } }, "ZILVERAI-zynapse-05b86a4"],
+    "zynapse": ["zynapse@github:ZILVERAI/zynapse#71c0539", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "./dist/cli/index.js" } }, "ZILVERAI-zynapse-71c0539"],
 
     "@babel/core/debug": ["debug@4.4.1", "", { "dependencies": { "ms": "^2.1.3" } }, "sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ=="],
 
@@ -1458,7 +1458,7 @@
 
     "backend/@types/bun": ["@types/bun@1.1.12", "", { "dependencies": { "bun-types": "1.1.32" } }, "sha512-UkewJesRDP3+AW30Gc8hvxuIt+vHgYZXmVOKaXV8xnwAnMXTAs3XZDsa/jW+LSdAYhHslokSm72lq63FYYjZqA=="],
 
-    "backend/zynapse": ["zynapse@0.1.0", "", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "dist/cli/index.js" } }, "sha512-PLyjgChhAkaZG4YtHmo4foYWQne7PM7cZlaqhd5w9hYU5A5lvr9W49AZmYGiGfFqet+urB6ihgqS3Otu63sQTg=="],
+    "backend/zynapse": ["zynapse@0.1.2", "", { "dependencies": { "json-schema-to-zod": "^2.6.1", "prettier": "^3.5.3", "zod": "^3.24.3", "zod-to-json-schema": "^3.24.6", "zod-to-ts": "^1.2.0" }, "peerDependencies": { "typescript": "^5" }, "bin": { "zynapse-cli": "dist/cli/index.js" } }, "sha512-PJGCGKMiesuM7/hwHBJOZfNnFOycT9BRcV/bLvqXOMDdd/hK0eW6LypYd9pXyKdIBqnrLwZ7vs4/vQuF2VOFMQ=="],
 
     "brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
