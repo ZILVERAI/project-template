@@ -98,7 +98,7 @@ async function reassignFrontendProcess() {
 		processes.frontend = undefined;
 	}
 	const frontendProcess = Bun.spawn({
-		cmd: ["bun", "run", "dev"],
+		cmd: [process.execPath, "run", "dev"],
 		cwd: "./frontend",
 		stdout: "pipe",
 		stderr: "pipe",
@@ -126,7 +126,7 @@ async function reassignBackendProcess(enviroment: Record<string, string>) {
 		processes.backend = undefined;
 	}
 	const backendProcess = Bun.spawn({
-		cmd: ["bun", "run", "dev:server"],
+		cmd: [process.execPath, "run", "dev:server"],
 		cwd: "./backend",
 		stdout: "pipe",
 		stderr: "pipe",
