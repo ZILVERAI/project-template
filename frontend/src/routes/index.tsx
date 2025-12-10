@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useState } from "react";
+import { useGreetingStreamedNameSubscription } from "@/_generated/greeting.service";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -12,6 +13,25 @@ export const Route = createFileRoute("/")({
 const sampleSchema = z.object({
   message: z.string(),
 });
+
+function StreamedName({ name }: { name: string }) {
+  const { messages, isConnected } = useGreetingStreamedNameSubscription(
+    { name },
+    {
+      onError: (error) => console.error("Stream error:", error),
+      onClose: () => console.log("Stream closed"),
+    }
+  );
+
+  return (
+    <div className="mt-4">
+      <p className="text-sm text-muted-foreground">
+        {isConnected ? "Connected" : "Disconnected"}
+      </p>
+      <p className="text-lg font-mono">{messages.join("")}</p>
+    </div>
+  );
+}
 
 function Index() {
   const [msg, setMsg] = useState<string | undefined>(undefined);
@@ -30,7 +50,7 @@ function Index() {
   return (
     <div className="p-2">
       <h3>Welcome Home!</h3>
-      {msg && <h3>{msg}</h3>}
+      {msg && <StreamedName name={msg} />}
       <form
         onSubmit={(e) => {
           e.preventDefault();
