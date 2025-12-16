@@ -159,10 +159,13 @@ export type GreetingechoOutputType = {
   msg: string;
 };
 
-export function useGreetingechoBidirectional(extraOptions?: {
-  onError?: (errorMessage: string) => void;
-  onClose?: () => void;
-}) {
+export function useGreetingechoBidirectional(
+  active?: boolean = true,
+  extraOptions?: {
+    onError?: (errorMessage: string) => void;
+    onClose?: () => void;
+  },
+) {
   /*Echo's back the given message*/
   const socketRef = useRef<WebSocket>();
   const [messages, setMessages] = useState<Array<GreetingechoOutputType>>([]);
@@ -239,7 +242,7 @@ export function useGreetingechoBidirectional(extraOptions?: {
       socketRef.current = undefined;
       setIsConnected(false);
     };
-  }, []);
+  }, [active]);
 
   return {
     messages,
