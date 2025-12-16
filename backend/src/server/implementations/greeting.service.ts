@@ -19,6 +19,22 @@ const greetingImplementation = new ServiceImplementationBuilder(
 			await conn.close();
 		},
 	)
+	.registerProcedureImplementation("echo", async (req, conn) => {
+		conn.addOnCloseMessageListener(async () => {
+			console.log("Bye bye!");
+		});
+		conn.addOnMessageListener({
+			name: "Test",
+			callback: async (conn, { msg }) => {
+				console.log("Received", msg);
+				conn.sendMessage({
+					msg: `Echo: ${msg}`,
+				});
+			},
+		});
+
+		return undefined;
+	})
 	.build();
 
 export { greetingImplementation };

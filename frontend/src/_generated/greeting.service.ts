@@ -1,5 +1,5 @@
 import {useQuery, UseQueryOptions} from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {z} from "zod"
 
 // ---- Service Name: Greeting ----
@@ -149,6 +149,102 @@ export function useGreetingStreamedNameSubscription(
   return {
     messages,
     isConnected,
+  };
+}
+
+export const GreetingechoBidirectionalInputSchema = z
+  .object({ msg: z.string() })
+  .strict();
+export type GreetingechoOutputType = {
+  msg: string;
+};
+
+export function useGreetingechoBidirectional(extraOptions?: {
+  onError?: (errorMessage: string) => void;
+  onClose?: () => void;
+}) {
+  /*Echo's back the given message*/
+  const socketRef = useRef<WebSocket>();
+  const [messages, setMessages] = useState<Array<GreetingechoOutputType>>([]);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+
+  const onErrorRef = useRef(extraOptions?.onError);
+  const onCloseRef = useRef(extraOptions?.onClose);
+
+  useEffect(() => {
+    onErrorRef.current = extraOptions?.onError;
+    onCloseRef.current = extraOptions?.onClose;
+  }, [extraOptions]);
+
+  const send = useCallback(
+    (data: z.infer<typeof GreetingechoBidirectionalInputSchema>) => {
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        socketRef.current.send(JSON.stringify(data));
+      }
+    },
+    [],
+  );
+  useEffect(() => {
+    if (socketRef.current) {
+      return;
+    }
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const targetURL = new URL(`${protocol}//${window.location.host}/_api`);
+    const fullPayload = {
+      service: "Greeting",
+      procedure: "echo",
+    };
+    const stringifiedArguments = JSON.stringify(fullPayload);
+    const encodedArguments = encodeURIComponent(stringifiedArguments);
+    targetURL.searchParams.set("payload", encodedArguments);
+
+    const socket = new WebSocket(targetURL);
+    socketRef.current = socket;
+
+    socket.addEventListener("open", () => {
+      setIsConnected(true);
+    });
+
+    socket.addEventListener("error", () => {
+      if (onErrorRef.current) {
+        onErrorRef.current("WebSocket connection error.");
+      }
+      setIsConnected(false);
+    });
+
+    socket.addEventListener("message", (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        setMessages((prev) => [...prev, data]);
+      } catch {
+        if (onErrorRef.current) {
+          onErrorRef.current("Failed to decode data");
+        }
+      }
+    });
+
+    socket.addEventListener("close", () => {
+      if (onCloseRef.current) {
+        onCloseRef.current();
+      }
+      setIsConnected(false);
+    });
+
+    return () => {
+      socket.close();
+      socketRef.current = undefined;
+      setIsConnected(false);
+    };
+  }, []);
+
+  return {
+    messages,
+    isConnected,
+    send,
   };
 }
 //----

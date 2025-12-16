@@ -21,6 +21,17 @@ const greetingService = new Service("Greeting")
 		method: "SUBSCRIPTION",
 		name: "StreamedName",
 		output: z.string(),
+	})
+	.addProcedure({
+		description: "Echo's back the given message",
+		input: z.object({
+			msg: z.string(),
+		}),
+		method: "BIDIRECTIONAL",
+		name: "echo",
+		output: z.object({
+			msg: z.string(),
+		}),
 	});
 
 // COMMENT: This is the main API schema for the Todo application.

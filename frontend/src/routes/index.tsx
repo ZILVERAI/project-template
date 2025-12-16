@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useState } from "react";
-import { useGreetingStreamedNameSubscription } from "@/_generated/greeting.service";
+import {
+  GreetingechoOutputType,
+  useGreetingechoBidirectional,
+  useGreetingStreamedNameSubscription,
+} from "@/_generated/greeting.service";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -20,7 +24,7 @@ function StreamedName({ name }: { name: string }) {
     {
       onError: (error) => console.error("Stream error:", error),
       onClose: () => console.log("Stream closed"),
-    }
+    },
   );
 
   return (
@@ -33,8 +37,24 @@ function StreamedName({ name }: { name: string }) {
   );
 }
 
+function BidirectionalDemo({
+  messages,
+}: {
+  messages: Array<GreetingechoOutputType>;
+}) {
+  return (
+    <div className="mt-4">
+      BidirectionalDemo
+      {messages.map((m) => {
+        return <p className="text-lg font-mono">{m.msg}</p>;
+      })}
+    </div>
+  );
+}
+
 function Index() {
   const [msg, setMsg] = useState<string | undefined>(undefined);
+  const echoConnection = useGreetingechoBidirectional({ msg: "" });
   const form = useForm({
     defaultValues: {
       message: "",
@@ -44,6 +64,9 @@ function Index() {
     },
     onSubmit: ({ value }) => {
       setMsg(value.message);
+      echoConnection.send({
+        msg: value.message,
+      });
     },
   });
 
@@ -51,6 +74,7 @@ function Index() {
     <div className="p-2">
       <h3>Welcome Home!</h3>
       {msg && <StreamedName name={msg} />}
+      <BidirectionalDemo messages={echoConnection.messages} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
