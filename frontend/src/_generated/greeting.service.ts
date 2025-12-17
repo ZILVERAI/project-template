@@ -200,6 +200,7 @@ export function useGreetingechoBidirectional(
     const fullPayload = {
       service: "Greeting",
       procedure: "echo",
+      data: {},
     };
     const stringifiedArguments = JSON.stringify(fullPayload);
     const encodedArguments = encodeURIComponent(stringifiedArguments);
