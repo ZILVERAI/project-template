@@ -54,7 +54,7 @@ function BidirectionalDemo({
 
 function Index() {
   const [msg, setMsg] = useState<string | undefined>(undefined);
-  const echoConnection = useGreetingechoBidirectional({ msg: "" });
+  const echoConnection = useGreetingechoBidirectional();
   const form = useForm({
     defaultValues: {
       message: "",

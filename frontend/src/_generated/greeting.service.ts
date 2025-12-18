@@ -160,7 +160,7 @@ export type GreetingechoOutputType = {
 };
 
 export function useGreetingechoBidirectional(
-  active?: boolean = true,
+  active: boolean = true,
   extraOptions?: {
     onError?: (errorMessage: string) => void;
     onClose?: () => void;
