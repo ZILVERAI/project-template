@@ -115,9 +115,6 @@ export function zilverClassesPlugin(): Plugin {
 		},
 
 		transformIndexHtml() {
-			if (!import.meta.env.DEV) {
-				return [];
-			}
 			return [
 				// 1. First inject the HMR bridge module
 				{
