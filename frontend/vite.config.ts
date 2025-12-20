@@ -42,55 +42,6 @@ function parseZilverID(
 	};
 }
 
-const VIRTUAL_MODULE_ID = "virtual:zilver-hmr";
-const RESOLVED_VIRTUAL_MODULE_ID = "\0" + VIRTUAL_MODULE_ID;
-
-const zilverHMRScript = `
-            const zilverHMR = {
-              addClass(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:add-class', { zilverID, classes });
-                }
-              },
-              removeClass(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:remove-class', { zilverID, classes });
-                }
-              },
-              setClasses(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:set-classes', { zilverID, classes });
-                }
-              },
-              getClasses(zilverID) {
-                return new Promise((resolve) => {
-                  if (import.meta.hot) {
-                    const handler = (data) => {
-                      if (data.zilverID === zilverID) {
-                        resolve(data.classes);
-                      }
-                    };
-                    import.meta.hot.on('zilver:classes', handler);
-                    import.meta.hot.send('zilver:get-classes', { zilverID });
-                    setTimeout(() => resolve([]), 5000);
-                  } else {
-                    resolve([]);
-                  }
-                });
-              },
-              onClassUpdated(callback) {
-                if (import.meta.hot) {
-                  import.meta.hot.on('zilver:class-updated', callback);
-                }
-              },
-            };
-
-            // Expose globally for external scripts
-            window.__ZILVER_HMR__ = zilverHMR;
-
-            export default zilverHMR;
-          `;
-
 export function zilverClassesPlugin(): Plugin {
 	const classMap: ClassMapping = {};
 	let server: ViteDevServer;
@@ -101,75 +52,6 @@ export function zilverClassesPlugin(): Plugin {
 
 		configResolved(config) {
 			rootDir = config.root;
-		},
-
-		resolveId(id) {
-			if (id === VIRTUAL_MODULE_ID) {
-				return RESOLVED_VIRTUAL_MODULE_ID;
-			}
-		},
-
-		load(id) {
-			if (id === RESOLVED_VIRTUAL_MODULE_ID) {
-				// This module runs inside the Vite app context and has import.meta.hot
-				return `
-            const zilverHMR = {
-              addClass(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:add-class', { zilverID, classes });
-                }
-              },
-              removeClass(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:remove-class', { zilverID, classes });
-                }
-              },
-              setClasses(zilverID, classes) {
-                if (import.meta.hot) {
-                  import.meta.hot.send('zilver:set-classes', { zilverID, classes });
-                }
-              },
-              getClasses(zilverID) {
-                return new Promise((resolve) => {
-                  if (import.meta.hot) {
-                    const handler = (data) => {
-                      if (data.zilverID === zilverID) {
-                        resolve(data.classes);
-                      }
-                    };
-                    import.meta.hot.on('zilver:classes', handler);
-                    import.meta.hot.send('zilver:get-classes', { zilverID });
-                    setTimeout(() => resolve([]), 5000);
-                  } else {
-                    resolve([]);
-                  }
-                });
-              },
-              onClassUpdated(callback) {
-                if (import.meta.hot) {
-                  import.meta.hot.on('zilver:class-updated', callback);
-                }
-              },
-            };
-
-            // Expose globally for external scripts
-            window.__ZILVER_HMR__ = zilverHMR;
-
-            export default zilverHMR;
-          `;
-			}
-		},
-
-		transformIndexHtml() {
-			return [
-				// 1. First inject the HMR bridge module
-				{
-					tag: "script",
-					attrs: { type: "module" },
-					children: zilverHMRScript,
-					injectTo: "head-prepend",
-				},
-			];
 		},
 
 		configureServer(_server) {

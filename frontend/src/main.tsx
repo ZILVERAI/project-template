@@ -18,6 +18,12 @@ declare module "@tanstack/react-router" {
   }
 }
 
+// ZILVER utilities only availble in dev, DO NOT REMOVE
+if (import.meta.env.DEV && import.meta.hot) {
+  // @ts-ignore
+  window.__HMR__ = import.meta.hot;
+}
+
 // Render the app
 const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
