@@ -12,6 +12,12 @@ import {
 
 import MagicString from "magic-string";
 import * as t from "@babel/types";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
+}
 // import { walk } from "estree-walker";
 ////
 import { JSXIdentifier, JSXMemberExpression } from "@babel/types";
@@ -467,7 +473,7 @@ function mergeClasses(existing: string, newClasses: string): string {
 		}
 	}
 
-	return result.join(" ");
+	return cn(result.join(" "));
 }
 
 function getUtilityPrefix(cls: string): string {
