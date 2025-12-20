@@ -13,7 +13,7 @@ import {
 import MagicString from "magic-string";
 import * as t from "@babel/types";
 // import { walk } from "estree-walker";
-
+////
 import { JSXIdentifier, JSXMemberExpression } from "@babel/types";
 
 const taggableExtensions = new Set([".jsx", ".tsx"]);
@@ -27,7 +27,7 @@ interface ClassUpdate {
 interface ClassMapping {
 	[filePath: string]: ClassUpdate[];
 }
-
+//
 function parseZilverID(
 	zilverID: string,
 ): { filePath: string; line: number; column: number } | null {
@@ -42,13 +42,147 @@ function parseZilverID(
 	};
 }
 
+function codeTransformation(code: string, id: string, classMap: ClassMapping) {
+	if (!id.match(/\.[jt]sx$/)) return null;
+
+	const fileUpdates = classMap[id];
+	console.log("Transform called for:", id);
+	console.log("fileUpdates:", fileUpdates);
+	if (!fileUpdates || fileUpdates.length === 0) return null;
+	//
+	console.log("=== CODE SAMPLE (first 500 chars) ===");
+	console.log(code.substring(0, 500));
+	console.log("=== END CODE SAMPLE ===");
+
+	const ast = parse(code, {
+		sourceType: "module",
+		plugins: ["typescript", "jsx"],
+	});
+
+	let modified = false;
+
+	let traverse: typeof _traverse;
+
+	if (typeof _traverse === "function") {
+		traverse = _traverse;
+	} else {
+		//@ts-expect-error Lib is bugged
+		traverse = _traverse.default;
+	}
+	console.log("About to traverse, traverse is:", typeof traverse);
+
+	traverse(ast, {
+		enter(path) {
+			//
+			//
+			/////
+			// Only process JSX opening elements
+			//
+			if (path.node.type !== "JSXOpeningElement") return;
+			console.log("Found jsx");
+			const node = path.node as t.JSXOpeningElement;
+			const loc = node.loc;
+
+			if (!loc) return;
+			console.log("Found loc");
+			////
+			// Find if this element's location matches any of our updates
+			// AST lines are 1-indexed, columns are 0-indexed
+			const update = fileUpdates.find((u) => u.line === loc.start.line);
+
+			if (!update || update.classes.length === 0) {
+				console.log("No updates found...");
+				return;
+			}
+
+			const newClasses = update.classes.join(" ");
+
+			// Find existing className attribute
+			const classNameAttrIndex = node.attributes.findIndex(
+				(attr) => t.isJSXAttribute(attr) && attr.name.name === "className",
+			);
+
+			if (classNameAttrIndex !== -1) {
+				const classNameAttr = node.attributes[
+					classNameAttrIndex
+				] as t.JSXAttribute;
+
+				if (t.isStringLiteral(classNameAttr.value)) {
+					// Simple string: className="foo bar"
+					classNameAttr.value.value = mergeClasses(
+						classNameAttr.value.value,
+						newClasses,
+					);
+					modified = true;
+				} else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+					const expr = classNameAttr.value.expression;
+
+					if (t.isStringLiteral(expr)) {
+						// className={"foo bar"}
+						expr.value = mergeClasses(expr.value, newClasses);
+						modified = true;
+					} else if (t.isTemplateLiteral(expr) && expr.quasis.length === 1) {
+						// className={`foo bar`} (no interpolations)
+						expr.quasis[0].value.raw = mergeClasses(
+							expr.quasis[0].value.raw,
+							newClasses,
+						);
+						expr.quasis[0].value.cooked = expr.quasis[0].value.raw;
+						modified = true;
+					} else if (t.isCallExpression(expr)) {
+						// className={cn("foo", "bar")} - inject as first argument
+						expr.arguments.unshift(t.stringLiteral(newClasses));
+						modified = true;
+					} else {
+						// Complex expression - wrap in template literal
+						classNameAttr.value = t.jsxExpressionContainer(
+							t.templateLiteral(
+								[
+									t.templateElement(
+										{ raw: newClasses + " ", cooked: newClasses + " " },
+										false,
+									),
+									t.templateElement({ raw: "", cooked: "" }, true),
+								],
+								[expr as t.Expression],
+							),
+						);
+						modified = true;
+					}
+				}
+			} else {
+				// No className attribute - add one
+				node.attributes.push(
+					t.jsxAttribute(
+						t.jsxIdentifier("className"),
+						t.stringLiteral(newClasses),
+					),
+				);
+				modified = true;
+			}
+		},
+	});
+	//
+	//
+
+	if (!modified) {
+		console.log("No modifications made");
+		return null;
+	}
+
+	console.log("Modifications made, returning new code and writting to file.");
+	const output = generate(ast, { retainLines: true }, code);
+	return { code: output.code, map: output.map };
+}
+//
 export function zilverClassesPlugin(): Plugin {
 	const classMap: ClassMapping = {};
 	let server: ViteDevServer;
 	let rootDir: string;
-
+	////
 	return {
 		name: "vite-plugin-zilver-classes",
+		enforce: "pre",
 
 		configResolved(config) {
 			rootDir = config.root;
@@ -57,7 +191,7 @@ export function zilverClassesPlugin(): Plugin {
 		configureServer(_server) {
 			server = _server;
 
-			server.ws.on("zilver:add-class", (data, client) => {
+			server.ws.on("zilver:add-class", async (data, client) => {
 				const { zilverID, classes } = data;
 				const parsed = parseZilverID(zilverID);
 
@@ -89,17 +223,22 @@ export function zilverClassesPlugin(): Plugin {
 					classMap[absolutePath].push({ line, column, classes: [...classes] });
 				}
 
-				// Invalidate module to trigger re-transform
-				const mod = server.moduleGraph.getModuleById(absolutePath);
-				if (mod) {
-					server.moduleGraph.invalidateModule(mod);
+				const fs = await import("fs/promises");
+				const originalCode = await fs.readFile(absolutePath, "utf-8");
+
+				const result = codeTransformation(originalCode, absolutePath, classMap);
+
+				if (!result) {
+					console.error("Failed at making change");
+					return;
 				}
+
+				await fs.writeFile(absolutePath, result.code, "utf-8");
 
 				client.send("zilver:class-updated", {
 					zilverID,
 					classes: existing?.classes ?? classes,
 				});
-				server.ws.send({ type: "full-reload" });
 			});
 
 			server.ws.on("zilver:remove-class", (data, client) => {
@@ -169,7 +308,13 @@ export function zilverClassesPlugin(): Plugin {
 			if (!id.match(/\.[jt]sx$/)) return null;
 
 			const fileUpdates = classMap[id];
+			console.log("Transform called for:", id);
+			console.log("fileUpdates:", fileUpdates);
 			if (!fileUpdates || fileUpdates.length === 0) return null;
+			//
+			console.log("=== CODE SAMPLE (first 500 chars) ===");
+			console.log(code.substring(0, 500));
+			console.log("=== END CODE SAMPLE ===");
 
 			const ast = parse(code, {
 				sourceType: "module",
@@ -186,29 +331,41 @@ export function zilverClassesPlugin(): Plugin {
 				//@ts-expect-error Lib is bugged
 				traverse = _traverse.default;
 			}
+			console.log("About to traverse, traverse is:", typeof traverse);
 
 			traverse(ast, {
-				JSXOpeningElement(nodePath) {
-					const loc = nodePath.node.loc;
-					if (!loc) return;
+				enter(path) {
+					//
+					//
+					/////
+					// Only process JSX opening elements
+					//
+					if (path.node.type !== "JSXOpeningElement") return;
+					console.log("Found jsx");
+					const node = path.node as t.JSXOpeningElement;
+					const loc = node.loc;
 
+					if (!loc) return;
+					console.log("Found loc");
+					////
 					// Find if this element's location matches any of our updates
 					// AST lines are 1-indexed, columns are 0-indexed
-					const update = fileUpdates.find(
-						(u) => u.line === loc.start.line && u.column === loc.start.column,
-					);
+					const update = fileUpdates.find((u) => u.line === loc.start.line);
 
-					if (!update || update.classes.length === 0) return;
+					if (!update || update.classes.length === 0) {
+						console.log("No updates found...");
+						return;
+					}
 
 					const newClasses = update.classes.join(" ");
 
 					// Find existing className attribute
-					const classNameAttrIndex = nodePath.node.attributes.findIndex(
+					const classNameAttrIndex = node.attributes.findIndex(
 						(attr) => t.isJSXAttribute(attr) && attr.name.name === "className",
 					);
 
 					if (classNameAttrIndex !== -1) {
-						const classNameAttr = nodePath.node.attributes[
+						const classNameAttr = node.attributes[
 							classNameAttrIndex
 						] as t.JSXAttribute;
 
@@ -242,7 +399,7 @@ export function zilverClassesPlugin(): Plugin {
 								expr.arguments.unshift(t.stringLiteral(newClasses));
 								modified = true;
 							} else {
-								// Complex expression - wrap in cn() or template literal
+								// Complex expression - wrap in template literal
 								classNameAttr.value = t.jsxExpressionContainer(
 									t.templateLiteral(
 										[
@@ -260,7 +417,7 @@ export function zilverClassesPlugin(): Plugin {
 						}
 					} else {
 						// No className attribute - add one
-						nodePath.node.attributes.push(
+						node.attributes.push(
 							t.jsxAttribute(
 								t.jsxIdentifier("className"),
 								t.stringLiteral(newClasses),
@@ -270,9 +427,17 @@ export function zilverClassesPlugin(): Plugin {
 					}
 				},
 			});
+			//
+			//
 
-			if (!modified) return null;
+			if (!modified) {
+				console.log("No modifications made");
+				return null;
+			}
 
+			console.log(
+				"Modifications made, returning new code and writting to file.",
+			);
 			const output = generate(ast, { retainLines: true }, code);
 			return { code: output.code, map: output.map };
 		},
@@ -374,6 +539,10 @@ function tagPlugin(): Plugin {
 				};
 
 				const abstracttree = parse(code, parseConfig);
+				//
+				console.log("=== CODE SAMPLE (first 500 chars) ===");
+				console.log(code.substring(0, 500));
+				console.log("=== END CODE SAMPLE ===");
 
 				const magicString = new MagicString(code);
 
@@ -419,7 +588,7 @@ function tagPlugin(): Plugin {
 							if (elName === "Fragment" || elName === "React.Fragment") {
 								return;
 							}
-
+							////
 							const line = jsxNode.loc?.start.line || 0;
 							const col = jsxNode.loc?.start.column || 0;
 							const compID = `${relativePath}:${line}:${col}`;
@@ -463,9 +632,11 @@ export default defineConfig(({ mode }) => {
 			},
 		}),
 	];
-
+	//
 	if (mode === "development") {
-		pluginsArray.push(tagPlugin(), zilverClassesPlugin());
+		pluginsArray.unshift(tagPlugin());
+		pluginsArray.unshift(zilverClassesPlugin());
+		///
 	} else {
 		pluginsArray.unshift(
 			tanStackRouterCodeSplitter({
