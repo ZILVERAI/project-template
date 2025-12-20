@@ -1,19 +1,353 @@
-import { defineConfig, Plugin, PluginOption } from "vite";
+import { defineConfig, Plugin, PluginOption, ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { parse, ParserOptions } from "@babel/parser";
 import _traverse from "@babel/traverse";
+import generate from "@babel/generator";
+
 import {
 	tanstackRouterAutoImport,
 	tanStackRouterCodeSplitter,
 } from "@tanstack/router-plugin/vite";
 
 import MagicString from "magic-string";
+import * as t from "@babel/types";
 // import { walk } from "estree-walker";
 
 import { JSXIdentifier, JSXMemberExpression } from "@babel/types";
 
 const taggableExtensions = new Set([".jsx", ".tsx"]);
+
+interface ClassUpdate {
+	classes: string[];
+	line: number;
+	column: number;
+}
+
+interface ClassMapping {
+	[filePath: string]: ClassUpdate[];
+}
+
+function parseZilverID(
+	zilverID: string,
+): { filePath: string; line: number; column: number } | null {
+	// Format: "src/routes/index.tsx:274:11"
+	const match = zilverID.match(/^(.+):(\d+):(\d+)$/);
+	if (!match) return null;
+
+	return {
+		filePath: match[1],
+		line: parseInt(match[2], 10),
+		column: parseInt(match[3], 10),
+	};
+}
+
+export function zilverClassesPlugin(): Plugin {
+	const classMap: ClassMapping = {};
+	let server: ViteDevServer;
+	let rootDir: string;
+
+	return {
+		name: "vite-plugin-zilver-classes",
+
+		configResolved(config) {
+			rootDir = config.root;
+		},
+
+		configureServer(_server) {
+			server = _server;
+
+			server.ws.on("zilver:add-class", (data, client) => {
+				const { zilverID, classes } = data;
+				const parsed = parseZilverID(zilverID);
+
+				if (!parsed) {
+					client.send("zilver:error", { message: "Invalid zilver ID format" });
+					return;
+				}
+
+				const { filePath, line, column } = parsed;
+				const absolutePath = path.resolve(rootDir, filePath);
+
+				if (!classMap[absolutePath]) {
+					classMap[absolutePath] = [];
+				}
+
+				// Find existing entry for this location or create new one
+				const existing = classMap[absolutePath].find(
+					(e) => e.line === line && e.column === column,
+				);
+
+				if (existing) {
+					// Merge classes, avoiding duplicates
+					for (const cls of classes) {
+						if (!existing.classes.includes(cls)) {
+							existing.classes.push(cls);
+						}
+					}
+				} else {
+					classMap[absolutePath].push({ line, column, classes: [...classes] });
+				}
+
+				// Invalidate module to trigger re-transform
+				const mod = server.moduleGraph.getModuleById(absolutePath);
+				if (mod) {
+					server.moduleGraph.invalidateModule(mod);
+				}
+
+				client.send("zilver:class-updated", {
+					zilverID,
+					classes: existing?.classes ?? classes,
+				});
+				server.ws.send({ type: "full-reload" });
+			});
+
+			server.ws.on("zilver:remove-class", (data, client) => {
+				const { zilverID, classes } = data;
+				const parsed = parseZilverID(zilverID);
+
+				if (!parsed) return;
+
+				const { filePath, line, column } = parsed;
+				const absolutePath = path.resolve(rootDir, filePath);
+
+				const fileUpdates = classMap[absolutePath];
+				if (!fileUpdates) return;
+
+				const existing = fileUpdates.find(
+					(e) => e.line === line && e.column === column,
+				);
+
+				if (existing) {
+					existing.classes = existing.classes.filter(
+						(c) => !classes.includes(c),
+					);
+
+					// Remove entry if no classes left
+					if (existing.classes.length === 0) {
+						const idx = fileUpdates.indexOf(existing);
+						fileUpdates.splice(idx, 1);
+					}
+				}
+
+				const mod = server.moduleGraph.getModuleById(absolutePath);
+				if (mod) {
+					server.moduleGraph.invalidateModule(mod);
+				}
+
+				client.send("zilver:class-updated", {
+					zilverID,
+					classes: existing?.classes ?? [],
+				});
+				server.ws.send({ type: "full-reload" });
+			});
+
+			server.ws.on("zilver:get-classes", (data, client) => {
+				const { zilverID } = data;
+				const parsed = parseZilverID(zilverID);
+
+				if (!parsed) {
+					client.send("zilver:classes", { zilverID, classes: [] });
+					return;
+				}
+
+				const { filePath, line, column } = parsed;
+				const absolutePath = path.resolve(rootDir, filePath);
+
+				const existing = classMap[absolutePath]?.find(
+					(e) => e.line === line && e.column === column,
+				);
+
+				client.send("zilver:classes", {
+					zilverID,
+					classes: existing?.classes ?? [],
+				});
+			});
+		},
+
+		transform(code, id) {
+			if (!id.match(/\.[jt]sx$/)) return null;
+
+			const fileUpdates = classMap[id];
+			if (!fileUpdates || fileUpdates.length === 0) return null;
+
+			const ast = parse(code, {
+				sourceType: "module",
+				plugins: ["typescript", "jsx"],
+			});
+
+			let modified = false;
+
+			let traverse: typeof _traverse;
+
+			if (typeof _traverse === "function") {
+				traverse = _traverse;
+			} else {
+				//@ts-expect-error Lib is bugged
+				traverse = _traverse.default;
+			}
+
+			traverse(ast, {
+				JSXOpeningElement(nodePath) {
+					const loc = nodePath.node.loc;
+					if (!loc) return;
+
+					// Find if this element's location matches any of our updates
+					// AST lines are 1-indexed, columns are 0-indexed
+					const update = fileUpdates.find(
+						(u) => u.line === loc.start.line && u.column === loc.start.column,
+					);
+
+					if (!update || update.classes.length === 0) return;
+
+					const newClasses = update.classes.join(" ");
+
+					// Find existing className attribute
+					const classNameAttrIndex = nodePath.node.attributes.findIndex(
+						(attr) => t.isJSXAttribute(attr) && attr.name.name === "className",
+					);
+
+					if (classNameAttrIndex !== -1) {
+						const classNameAttr = nodePath.node.attributes[
+							classNameAttrIndex
+						] as t.JSXAttribute;
+
+						if (t.isStringLiteral(classNameAttr.value)) {
+							// Simple string: className="foo bar"
+							classNameAttr.value.value = mergeClasses(
+								classNameAttr.value.value,
+								newClasses,
+							);
+							modified = true;
+						} else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+							const expr = classNameAttr.value.expression;
+
+							if (t.isStringLiteral(expr)) {
+								// className={"foo bar"}
+								expr.value = mergeClasses(expr.value, newClasses);
+								modified = true;
+							} else if (
+								t.isTemplateLiteral(expr) &&
+								expr.quasis.length === 1
+							) {
+								// className={`foo bar`} (no interpolations)
+								expr.quasis[0].value.raw = mergeClasses(
+									expr.quasis[0].value.raw,
+									newClasses,
+								);
+								expr.quasis[0].value.cooked = expr.quasis[0].value.raw;
+								modified = true;
+							} else if (t.isCallExpression(expr)) {
+								// className={cn("foo", "bar")} - inject as first argument
+								expr.arguments.unshift(t.stringLiteral(newClasses));
+								modified = true;
+							} else {
+								// Complex expression - wrap in cn() or template literal
+								classNameAttr.value = t.jsxExpressionContainer(
+									t.templateLiteral(
+										[
+											t.templateElement(
+												{ raw: newClasses + " ", cooked: newClasses + " " },
+												false,
+											),
+											t.templateElement({ raw: "", cooked: "" }, true),
+										],
+										[expr as t.Expression],
+									),
+								);
+								modified = true;
+							}
+						}
+					} else {
+						// No className attribute - add one
+						nodePath.node.attributes.push(
+							t.jsxAttribute(
+								t.jsxIdentifier("className"),
+								t.stringLiteral(newClasses),
+							),
+						);
+						modified = true;
+					}
+				},
+			});
+
+			if (!modified) return null;
+
+			const output = generate(ast, { retainLines: true }, code);
+			return { code: output.code, map: output.map };
+		},
+	};
+}
+
+function mergeClasses(existing: string, newClasses: string): string {
+	const existingList = existing.split(/\s+/).filter(Boolean);
+	const newList = newClasses.split(/\s+/).filter(Boolean);
+
+	const result: string[] = [];
+	const seenPrefixes = new Set<string>();
+
+	// Add new classes first (they take priority)
+	for (const cls of newList) {
+		const prefix = getUtilityPrefix(cls);
+		seenPrefixes.add(prefix);
+		result.push(cls);
+	}
+
+	// Add existing classes that don't conflict
+	for (const cls of existingList) {
+		const prefix = getUtilityPrefix(cls);
+		if (!seenPrefixes.has(prefix)) {
+			result.push(cls);
+			seenPrefixes.add(prefix);
+		}
+	}
+
+	return result.join(" ");
+}
+
+function getUtilityPrefix(cls: string): string {
+	// Handle negative values like -mt-4
+	const normalized = cls.startsWith("-") ? cls.slice(1) : cls;
+
+	// Common Tailwind prefixes that should be treated as the same "slot"
+	const prefixPatterns = [
+		/^(bg)-/,
+		/^(text)-(?!opacity)/,
+		/^(text-opacity)-/,
+		/^(font)-/,
+		/^(p|px|py|pt|pr|pb|pl)-/,
+		/^(m|mx|my|mt|mr|mb|ml)-/,
+		/^(w)-/,
+		/^(h)-/,
+		/^(min-w)-/,
+		/^(min-h)-/,
+		/^(max-w)-/,
+		/^(max-h)-/,
+		/^(rounded|rounded-t|rounded-r|rounded-b|rounded-l|rounded-tl|rounded-tr|rounded-bl|rounded-br)-/,
+		/^(border|border-t|border-r|border-b|border-l)-(?!opacity)/,
+		/^(shadow)-/,
+		/^(opacity)-/,
+		/^(z)-/,
+		/^(gap|gap-x|gap-y)-/,
+		/^(justify)-/,
+		/^(items)-/,
+		/^(self)-/,
+		/^(flex)-/,
+		/^(grid-cols)-/,
+		/^(grid-rows)-/,
+	];
+
+	for (const pattern of prefixPatterns) {
+		const match = normalized.match(pattern);
+		if (match) {
+			return match[1];
+		}
+	}
+
+	// For non-value utilities like "flex", "hidden", "block", etc.
+	// Return the whole class as its own "prefix" so duplicates are removed
+	return cls;
+}
 
 function tagPlugin(): Plugin {
 	const cwd = process.cwd();
