@@ -48,6 +48,76 @@ function parseZilverID(
 	};
 }
 
+interface ColorInfo {
+	name: string;
+	theme: "light" | "dark";
+	value: string;
+	type: "hsl" | "hex";
+}
+
+function detectColorType(value: string): "hsl" | "hex" {
+	// Check if it's a hex color (starts with #)
+	if (value.trim().startsWith("#")) {
+		return "hex";
+	}
+	// Otherwise assume it's HSL (format like "0 0% 100%" or "240 5.3% 26.1%")
+	return "hsl";
+}
+
+function parseCSSColors(cssContent: string): ColorInfo[] {
+	const colors: ColorInfo[] = [];
+
+	// Extract @layer base block first (where the theme colors are defined)
+	const layerBaseMatch = cssContent.match(/@layer\s+base\s*\{([\s\S]*)\}/);
+	const contentToParse = layerBaseMatch ? layerBaseMatch[1] : cssContent;
+
+	// Match :root block within @layer base
+	const rootMatch = contentToParse.match(/:root\s*\{([^}]+)\}/s);
+	if (rootMatch) {
+		const rootContent = rootMatch[1];
+		const colorMatches = rootContent.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g);
+
+		for (const match of colorMatches) {
+			const name = match[1];
+			const value = match[2].trim();
+
+			// Only include color-related variables (exclude radius, etc.)
+			if (!name.includes("radius")) {
+				colors.push({
+					name,
+					theme: "light",
+					value,
+					type: detectColorType(value),
+				});
+			}
+		}
+	}
+
+	// Match .dark block
+	const darkMatch = contentToParse.match(/\.dark\s*\{([^}]+)\}/s);
+	if (darkMatch) {
+		const darkContent = darkMatch[1];
+		const colorMatches = darkContent.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g);
+
+		for (const match of colorMatches) {
+			const name = match[1];
+			const value = match[2].trim();
+
+			// Only include color-related variables
+			if (!name.includes("radius")) {
+				colors.push({
+					name,
+					theme: "dark",
+					value,
+					type: detectColorType(value),
+				});
+			}
+		}
+	}
+
+	return colors;
+}
+
 function codeTransformation(
 	code: string,
 	id: string,
@@ -340,6 +410,23 @@ export function zilverClassesPlugin(): Plugin {
 					zilverID,
 					classes: existing?.classes ?? [],
 				});
+			});
+
+			server.ws.on("zilver:get-colors", async (_, client) => {
+				const fs = await import("fs/promises");
+				const cssPath = path.resolve(rootDir, "src/index.css");
+
+				try {
+					const cssContent = await fs.readFile(cssPath, "utf-8");
+					const colors = parseCSSColors(cssContent);
+
+					client.send("zilver:colors", { colors });
+				} catch (error) {
+					client.send("zilver:error", {
+						message: "Failed to read CSS file",
+						error: String(error),
+					});
+				}
 			});
 		},
 	};
