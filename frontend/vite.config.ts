@@ -265,6 +265,7 @@ export function zilverClassesPlugin(): Plugin {
 			});
 
 			server.ws.on("zilver:remove-class", async (data, client) => {
+				console.log("Remove class called.");
 				const { zilverID, classes } = data;
 				const parsed = parseZilverID(zilverID);
 
@@ -273,23 +274,24 @@ export function zilverClassesPlugin(): Plugin {
 				const { filePath, line, column } = parsed;
 				const absolutePath = path.resolve(rootDir, filePath);
 
-				const fileUpdates = classMap[absolutePath];
-				if (!fileUpdates) return;
+				if (!classMap[absolutePath]) {
+					classMap[absolutePath] = [];
+				}
 
-				const existing = fileUpdates.find(
+				// Find existing entry for this location or create new one
+				const existing = classMap[absolutePath].find(
 					(e) => e.line === line && e.column === column,
 				);
 
 				if (existing) {
-					existing.classes = existing.classes.filter(
-						(c) => !classes.includes(c),
-					);
-
-					// Remove entry if no classes left
-					if (existing.classes.length === 0) {
-						const idx = fileUpdates.indexOf(existing);
-						fileUpdates.splice(idx, 1);
+					// Merge classes, avoiding duplicates
+					for (const cls of classes) {
+						if (!existing.classes.includes(cls)) {
+							existing.classes.push(cls);
+						}
 					}
+				} else {
+					classMap[absolutePath].push({ line, column, classes: [...classes] });
 				}
 
 				const fs = await import("fs/promises");
@@ -314,7 +316,7 @@ export function zilverClassesPlugin(): Plugin {
 
 				client.send("zilver:class-updated", {
 					zilverID,
-					classes: existing?.classes ?? classes,
+					classes: result.mergedNewClasses,
 				});
 			});
 
