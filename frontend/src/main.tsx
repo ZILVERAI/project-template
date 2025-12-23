@@ -20,7 +20,7 @@ declare module "@tanstack/react-router" {
 
 // ZILVER utilities only availble in dev, DO NOT REMOVE
 if (import.meta.env.DEV && import.meta.hot) {
-  // @ts-expect-error
+  // @ts-expect-error: __HMT__ is not defined on window
   window.__HMR__ = import.meta.hot;
 }
 
