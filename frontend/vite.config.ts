@@ -132,9 +132,6 @@ function codeTransformation(
 	console.log("fileUpdates:", fileUpdates);
 	if (!fileUpdates || fileUpdates.length === 0) return null;
 	//
-	console.log("=== CODE SAMPLE (first 500 chars) ===");
-	console.log(code.substring(0, 500));
-	console.log("=== END CODE SAMPLE ===");
 
 	const ast = parse(code, {
 		sourceType: "module",
@@ -235,12 +232,17 @@ function codeTransformation(
 						}
 
 						// Apply the add/remove action to the combined classes
-						const finalClasses = mergeClasses(combinedClasses, newClasses, action);
+						const finalClasses = mergeClasses(
+							combinedClasses,
+							newClasses,
+							action,
+						);
 
 						if (stringLiteralIndices.length > 0) {
 							// Update the first string literal with merged result
 							const firstIdx = stringLiteralIndices[0];
-							(expr.arguments[firstIdx] as t.StringLiteral).value = finalClasses;
+							(expr.arguments[firstIdx] as t.StringLiteral).value =
+								finalClasses;
 
 							// Remove other string literals (iterate in reverse to preserve indices)
 							for (let i = stringLiteralIndices.length - 1; i > 0; i--) {
