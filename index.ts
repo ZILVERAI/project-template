@@ -1,15 +1,12 @@
 // NOTE: The process for the backend needs to be started in a special way because bun's watch doesn't
 // on docker
 
-import chokidar from "chokidar";
-import {
-	createPostgresJSExecutor,
-	createPostgresJSAdapter,
-} from "@prisma/studio-core/data/postgresjs";
+import { createPostgresJSExecutor } from "@prisma/studio-core/data/postgresjs";
 import postgres from "postgres";
 
 import { Query } from "@prisma/studio-core/data";
 import { serializeError } from "@prisma/studio-core/data/bff";
+const PROCESS_EXIT_CHECK_INTERVAL_MS = 100;
 
 // TODO: This needs to be moved to the container controller so that crashes and automatic restarts can be handled.
 async function startDrizzleStudio(): Promise<Bun.Subprocess> {
@@ -94,6 +91,7 @@ async function reassignFrontendProcess() {
 		p.kill("SIGKILL");
 		console.log("Waiting for frontend process to die..");
 		await p.exited;
+		await waitForExit(p.pid, 5_000, "Frontend");
 		console.log(`Frontend process exited.`);
 		processes.frontend = undefined;
 	}
@@ -117,11 +115,41 @@ async function reassignFrontendProcess() {
 	setupLogCapture("frontend", frontendProcess);
 }
 
+function isProcessAlive(pid: number): boolean {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function waitForExit(
+	pid: number,
+	timeout: number,
+	name: string,
+): Promise<void> {
+	const startTime = Date.now();
+
+	while (Date.now() - startTime < timeout) {
+		if (!isProcessAlive(pid)) {
+			return;
+		}
+		await new Promise((resolve) =>
+			setTimeout(resolve, PROCESS_EXIT_CHECK_INTERVAL_MS),
+		);
+	}
+
+	throw new Error(`Process ${name} did not exit within timeout`);
+}
+
 async function reassignBackendProcess(enviroment: Record<string, string>) {
 	if (processes.backend) {
 		const p = processes["backend"];
 		p.kill();
 		await p.exited;
+		await waitForExit(p.pid, 5_000, "Backend");
+
 		console.log("Backend proccess exited.");
 		processes.backend = undefined;
 	}
