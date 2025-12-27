@@ -218,23 +218,39 @@ function codeTransformation(
 						expr.quasis[0].value.cooked = expr.quasis[0].value.raw;
 						modified = true;
 					} else if (t.isCallExpression(expr)) {
-						// className={cn("foo", "bar")} - merge into existing string arguments
-						let merged = false;
+						// className={cn("foo", "bar", condition && "baz")}
+						// Collect all string literals, merge them, apply action, consolidate into one
 
-						// First, try to merge into the first string literal argument
+						const stringLiteralIndices: number[] = [];
+						let combinedClasses = "";
+
+						// Gather all string literal arguments and their indices
 						for (let i = 0; i < expr.arguments.length; i++) {
 							const arg = expr.arguments[i];
 							if (t.isStringLiteral(arg)) {
-								arg.value = mergeClasses(arg.value, newClasses, action);
-								mergedNewClasses = arg.value;
-								merged = true;
-								modified = true;
-								break;
+								stringLiteralIndices.push(i);
+								// Merge all existing string classes together
+								combinedClasses = twMerge(combinedClasses, arg.value);
 							}
 						}
 
-						// If no string literal found, add one at the beginning (only for "add" action)
-						if (!merged && action === "add") {
+						// Apply the add/remove action to the combined classes
+						const finalClasses = mergeClasses(combinedClasses, newClasses, action);
+
+						if (stringLiteralIndices.length > 0) {
+							// Update the first string literal with merged result
+							const firstIdx = stringLiteralIndices[0];
+							(expr.arguments[firstIdx] as t.StringLiteral).value = finalClasses;
+
+							// Remove other string literals (iterate in reverse to preserve indices)
+							for (let i = stringLiteralIndices.length - 1; i > 0; i--) {
+								expr.arguments.splice(stringLiteralIndices[i], 1);
+							}
+
+							mergedNewClasses = finalClasses;
+							modified = true;
+						} else if (action === "add") {
+							// No string literals found, add one at the beginning
 							expr.arguments.unshift(t.stringLiteral(newClasses));
 							mergedNewClasses = newClasses;
 							modified = true;
