@@ -510,9 +510,6 @@ function tagPlugin(): Plugin {
 
 				const abstracttree = parse(code, parseConfig);
 				//
-				console.log("=== CODE SAMPLE (first 500 chars) ===");
-				console.log(code.substring(0, 500));
-				console.log("=== END CODE SAMPLE ===");
 
 				const magicString = new MagicString(code);
 
