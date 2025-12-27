@@ -218,10 +218,27 @@ function codeTransformation(
 						expr.quasis[0].value.cooked = expr.quasis[0].value.raw;
 						modified = true;
 					} else if (t.isCallExpression(expr)) {
-						// className={cn("foo", "bar")} - inject as first argument
-						expr.arguments.unshift(t.stringLiteral(newClasses));
-						mergedNewClasses = newClasses;
-						modified = true;
+						// className={cn("foo", "bar")} - merge into existing string arguments
+						let merged = false;
+
+						// First, try to merge into the first string literal argument
+						for (let i = 0; i < expr.arguments.length; i++) {
+							const arg = expr.arguments[i];
+							if (t.isStringLiteral(arg)) {
+								arg.value = mergeClasses(arg.value, newClasses, action);
+								mergedNewClasses = arg.value;
+								merged = true;
+								modified = true;
+								break;
+							}
+						}
+
+						// If no string literal found, add one at the beginning (only for "add" action)
+						if (!merged && action === "add") {
+							expr.arguments.unshift(t.stringLiteral(newClasses));
+							mergedNewClasses = newClasses;
+							modified = true;
+						}
 					} else {
 						// Complex expression - wrap in template literal
 						classNameAttr.value = t.jsxExpressionContainer(
