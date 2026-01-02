@@ -148,7 +148,7 @@ async function reassignBackendProcess(enviroment: Record<string, string>) {
 		const p = processes["backend"];
 		p.kill();
 		await p.exited;
-		await waitForExit(p.pid, 5_000, "Backend");
+		// await waitForExit(p.pid, 5_000, "Backend");
 
 		console.log("Backend proccess exited.");
 		processes.backend = undefined;
