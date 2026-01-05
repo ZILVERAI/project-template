@@ -27,9 +27,10 @@ const greetingImplementation = new ServiceImplementationBuilder(
 			name: "Test",
 			callback: async (conn, { msg }) => {
 				console.log("Received", msg);
-				conn.sendMessage({
+				await conn.sendMessage({
 					msg: `Echo: ${msg}`,
 				});
+				await conn.close();
 			},
 		});
 

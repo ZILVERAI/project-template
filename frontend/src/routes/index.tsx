@@ -37,24 +37,21 @@ function StreamedName({ name }: { name: string }) {
   );
 }
 
-function BidirectionalDemo({
-  messages,
-}: {
-  messages: Array<GreetingechoOutputType>;
-}) {
+function BidirectionalDemo({ message }: { message: GreetingechoOutputType }) {
   return (
     <div className="mt-4">
       BidirectionalDemo
-      {messages.map((m) => {
-        return <p className="text-lg font-mono">{m.msg}</p>;
-      })}
+      <p className="text-lg font-mono">{message.msg}</p>;
     </div>
   );
 }
 
 function Index() {
   const [msg, setMsg] = useState<string | undefined>(undefined);
-  const echoConnection = useGreetingechoBidirectional();
+  const echoConnection = useGreetingechoBidirectional({
+    connectOnMount: true,
+    reconnect: true,
+  });
   const form = useForm({
     defaultValues: {
       message: "",
@@ -64,7 +61,7 @@ function Index() {
     },
     onSubmit: ({ value }) => {
       setMsg(value.message);
-      echoConnection.send({
+      echoConnection.sendMessage({
         msg: value.message,
       });
     },
@@ -74,7 +71,9 @@ function Index() {
     <div className="p-2">
       <h3>Welcome Home!</h3>
       {msg && <StreamedName name={msg} />}
-      <BidirectionalDemo messages={echoConnection.messages} />
+      {echoConnection.lastMessage && (
+        <BidirectionalDemo message={echoConnection.lastMessage} />
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
