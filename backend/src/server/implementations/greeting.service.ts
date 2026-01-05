@@ -9,6 +9,13 @@ const greetingImplementation = new ServiceImplementationBuilder(
 			greeting: { msg: `Hello ${input.name}` },
 		};
 	})
+	.registerProcedureImplementation("SendMessage", async (input) => {
+		console.log("Received message:", input.message);
+		// Here you could save to database, send notification, etc.
+		return {
+			status: true,
+		};
+	})
 	.registerProcedureImplementation(
 		"StreamedName",
 		async function (input, req, ctx, conn) {

@@ -623,6 +623,9 @@ export default defineConfig(({ mode }) => {
 		},
 		plugins: pluginsArray,
 		server: {
+			proxy: {
+				"/_api": "http://localhost:3000",
+			},
 			watch: {
 				usePolling: true,
 				alwaysStat: true,
